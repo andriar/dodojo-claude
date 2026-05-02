@@ -531,7 +531,9 @@ _OS = _platform.system().lower()  # 'linux' | 'darwin' | 'windows'
 # Cascadia weights). macOS keeps unicode blocks (Menlo/SFMono OK).
 GLYPHS = {
     "linux":   {"bars": "▁▂▃▄▅▆▇█", "fill": "▰", "empty": "▱", "div": "─", "dot": "·"},
-    "darwin":  {"bars": "▁▂▃▄▅▆▇█", "fill": "▰", "empty": "▱", "div": "─", "dot": "·"},
+    # macOS SFMono/Menlo render U+25B0/U+25B1 (▰▱) as italic parallelograms
+    # that look like ══ — use solid block + light shade for true monospace.
+    "darwin":  {"bars": "▁▂▃▄▅▆▇█", "fill": "█", "empty": "░", "div": "─", "dot": "·"},
     "windows": {"bars": "_.-=+*#@", "fill": "#", "empty": "-", "div": "-", "dot": "."},
 }
 G = GLYPHS.get(_OS, GLYPHS["linux"])
