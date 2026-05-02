@@ -63,9 +63,23 @@ def main() -> int:
                 except json.JSONDecodeError:
                     continue
 
-        # Find last user message — only summarize the current turn
+        # Find last user message — only summarize the current turn.
+        # Skip tool_result blocks: they have role=user but aren't real prompts.
         for i, r in enumerate(records):
-            if r.get("type") == "user" or (r.get("message") or {}).get("role") == "user":
+            msg = r.get("message") or {}
+            role = msg.get("role") or r.get("type")
+            if role != "user":
+                continue
+            content = msg.get("content")
+            is_real_prompt = False
+            if isinstance(content, str):
+                is_real_prompt = bool(content.strip())
+            elif isinstance(content, list):
+                for c in content:
+                    if isinstance(c, dict) and c.get("type") == "text" and (c.get("text") or "").strip():
+                        is_real_prompt = True
+                        break
+            if is_real_prompt:
                 last_user_idx = i
 
         scan = records[last_user_idx:] if last_user_idx >= 0 else records

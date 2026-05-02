@@ -864,8 +864,7 @@ def main() -> int:
     out.append(f"  {DIM}{_icon('spark')}  tip{RESET}  {tip}")
     out.append("")
 
-    banner = "\n".join(out)
-    sys.stdout.write(json.dumps({"systemMessage": banner}))
+    print("\n".join(out))
     return 0
 
 
