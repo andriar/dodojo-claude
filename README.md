@@ -22,13 +22,13 @@ Your Claude Code config bloats over time. CLAUDE.md grows. Memory accumulates. T
 
 ```bash
 # In Claude Code:
-/plugin marketplace add github.com/andriar/DoDojo-claude
+/plugin marketplace add github.com/andriar/dodojo-claude
 /plugin install dodojo
 ```
 
 Or local development:
 ```bash
-/plugin marketplace add /path/to/DoDojo-claude
+/plugin marketplace add /path/to/dodojo-claude
 /plugin install dodojo
 ```
 
@@ -48,7 +48,7 @@ Optional environment variables:
 DoDojo focuses on memory + audit. Pair with these for a full optimization stack:
 
 - **[claude-mem](https://github.com/thedotmack/claude-mem)** — auto-summarizes long sessions
-- **[RTK](https://github.com/.../rtk)** — trims shell command output
+- **RTK** — trims shell command output (Rust-based proxy)
 - **[caveman](https://github.com/JuliusBrussee/caveman)** — compresses prompt/response style
 - **pokemon-buddy** — gamified XP system (companion plugin)
 
