@@ -522,22 +522,38 @@ def load_jsonl_n(path: Path, max_lines: int = 500) -> list[dict]:
     return out
 
 
+import platform as _platform
+
+_OS = _platform.system().lower()  # 'linux' | 'darwin' | 'windows'
+
+# Per-OS glyph profiles. Windows fallback uses ASCII for terminals
+# without proper monospace + unicode block coverage (cmd.exe, default
+# Cascadia weights). macOS keeps unicode blocks (Menlo/SFMono OK).
+GLYPHS = {
+    "linux":   {"bars": "▁▂▃▄▅▆▇█", "fill": "▰", "empty": "▱", "div": "─", "dot": "·"},
+    "darwin":  {"bars": "▁▂▃▄▅▆▇█", "fill": "▰", "empty": "▱", "div": "─", "dot": "·"},
+    "windows": {"bars": "_.-=+*#@", "fill": "#", "empty": "-", "div": "-", "dot": "."},
+}
+G = GLYPHS.get(_OS, GLYPHS["linux"])
+
+
 def sparkline(values: list[int], color: bool = True) -> str:
+    bars = G["bars"]
     if not values or max(values) == 0:
-        return DIM + "▁" * len(values) + RESET
-    bars = "▁▂▃▄▅▆▇█"
+        return DIM + bars[0] * len(values) + RESET
     peak = max(values)
     s = "".join(bars[min(len(bars) - 1, int(c / peak * (len(bars) - 1)))] for c in values)
     return CYAN + s + RESET if color else s
 
 
 def progress_bar(cur: int, total: int, w: int = 16) -> str:
+    fill, empty = G["fill"], G["empty"]
     if total <= 0:
-        return DIM + "▱" * w + RESET
+        return DIM + empty * w + RESET
     pct = min(1.0, cur / total)
     f = int(round(pct * w))
     color = GREEN if pct >= 0.6 else YELLOW if pct >= 0.3 else RED
-    return color + "▰" * f + RESET + DIM + "▱" * (w - f) + RESET
+    return color + fill * f + RESET + DIM + empty * (w - f) + RESET
 
 
 def trend_arrow(this_w: int, last_w: int) -> str:
@@ -717,8 +733,11 @@ def main() -> int:
     bullet = D["bullet"]
     tagline = D["tagline"]
     sig = D["sig"]
-    sep_thin = DIM + D["div"] * width + RESET
-    sep_dot = DIM + D["section_div"] * width + RESET
+    # On Windows, force ASCII fallback for dividers regardless of theme
+    div_char = G["div"] if _OS == "windows" else D["div"]
+    sec_char = G["dot"] if _OS == "windows" else D["section_div"]
+    sep_thin = DIM + div_char * width + RESET
+    sep_dot = DIM + sec_char * width + RESET
 
     out: list[str] = []
 
