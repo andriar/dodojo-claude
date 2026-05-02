@@ -22,8 +22,8 @@ Your Claude Code config bloats over time. CLAUDE.md grows. Memory accumulates. T
 
 ```bash
 # In Claude Code:
-/plugin marketplace add github.com/andriar/dodojo-claude
-/plugin install dodojo
+/plugin marketplace add andriar/dodojo-claude
+/plugin install dodojo@dodojo
 ```
 
 Or local development:
