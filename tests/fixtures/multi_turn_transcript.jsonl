@@ -1,0 +1,10 @@
+{"type":"user","message":{"role":"user","content":"please explore the repo"}}
+{"type":"assistant","message":{"role":"assistant","content":[{"type":"text","text":"On it."},{"type":"tool_use","id":"t1","name":"Bash","input":{"command":"ls"}}]}}
+{"type":"user","message":{"role":"user","content":[{"type":"tool_result","tool_use_id":"t1","content":"file_a.py\nfile_b.py"}]}}
+{"type":"assistant","message":{"role":"assistant","content":[{"type":"tool_use","id":"t2","name":"Read","input":{"file_path":"/repo/file_a.py"}},{"type":"tool_use","id":"t3","name":"Read","input":{"file_path":"/repo/file_b.py"}}]}}
+{"type":"user","message":{"role":"user","content":[{"type":"tool_result","tool_use_id":"t2","content":"def a(): pass"},{"type":"tool_result","tool_use_id":"t3","content":"def b(): pass"}]}}
+{"type":"assistant","message":{"role":"assistant","content":[{"type":"text","text":"Found two stubs."}]}}
+{"type":"user","message":{"role":"user","content":"now patch file_a"}}
+{"type":"assistant","message":{"role":"assistant","content":[{"type":"tool_use","id":"t4","name":"Edit","input":{"file_path":"/repo/file_a.py","old_string":"pass","new_string":"return 1"}}]}}
+{"type":"user","message":{"role":"user","content":[{"type":"tool_result","tool_use_id":"t4","content":"ok"}]}}
+{"type":"assistant","message":{"role":"assistant","content":[{"type":"text","text":"Patched."}]}}

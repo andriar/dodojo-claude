@@ -71,6 +71,26 @@ def test_tool_result_not_counted_as_user_prompt(tmp_path):
     assert rec["files_touched_count"] == 2
 
 
+def test_multi_turn_fixture_only_counts_last_turn(tmp_path):
+    # Use the multi-turn fixture with mixed tool_use / tool_result blocks.
+    # Last user prompt = "now patch file_a"; only the Edit after it counts.
+    fixture = Path(__file__).parent / "fixtures" / "multi_turn_transcript.jsonl"
+    env = os.environ.copy()
+    env["DODOJO_DATA"] = str(tmp_path / "data")
+    r = run_hook(
+        "session-summary.py",
+        {"transcript_path": str(fixture), "session_id": "s3", "cwd": str(tmp_path)},
+        env=env,
+    )
+    assert r.returncode == 0
+    rec = json.loads(
+        next((tmp_path / "data" / "sessions").glob("*.jsonl")).read_text().strip().splitlines()[-1]
+    )
+    assert rec["tool_total"] == 1, rec
+    assert rec["tool_counts"] == {"Edit": 1}
+    assert rec["files_touched"] == ["/repo/file_a.py"]
+
+
 def test_missing_transcript_silent(tmp_path):
     env = os.environ.copy()
     env["DODOJO_DATA"] = str(tmp_path / "data")
