@@ -42,6 +42,7 @@ Optional environment variables:
 | `KAGAMI_THEME` | `default` | Greeter theme — see `kagami-theme.sh` for list |
 | `KAGAMI_ICONS` | `nerd` | `nerd` / `unicode` / `emoji` |
 | `KAGAMI_COLOR` | `0` | Set to `1` to enable ANSI colors in greeter |
+| `KAGAMI_SILENT` | `0` | Set to `1` to skip injecting greeter into Claude's context (~400 tokens/session). Greeter still renders to terminal. |
 
 ## Companions (not bundled)
 
@@ -51,6 +52,19 @@ DoDojo focuses on memory + audit. Pair with these for a full optimization stack:
 - **RTK** — trims shell command output (Rust-based proxy)
 - **[caveman](https://github.com/JuliusBrussee/caveman)** — compresses prompt/response style
 - **pokemon-buddy** — gamified XP system (companion plugin)
+
+## Docs
+
+See [docs/README.md](docs/README.md) for hooks, commands, skills, release process.
+
+## Develop
+
+```bash
+uv venv .venv && uv pip install --python .venv pytest
+.venv/bin/python -m pytest tests/ -q
+```
+
+Release: `scripts/bump.sh <new-version>`.
 
 ## Status
 
