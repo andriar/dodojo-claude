@@ -26,15 +26,28 @@ G = _greet_module()
 
 
 def test_sparkline_known_sequence():
-    assert G.sparkline([1, 2, 3, 4, 5], color=False) == "▂▃▅▆█"
+    # 7-step ramp (▁▂▃▄▅▆▇), peak capped at ▇ (no full block).
+    # values=[1..5], peak=5, len(bars)-1=6 → indices 1,2,3,4,6 → ▂▃▄▅▇.
+    assert G.sparkline([1, 2, 3, 4, 5], color=False) == "▂▃▄▅▇"
+
+
+def test_sparkline_no_full_block():
+    # Regression: full block U+2588 (█) bleeds — must be excluded from ramp.
+    assert "█" not in G.sparkline([1, 5, 10, 100], color=False)
 
 
 def test_sparkline_empty_returns_empty():
     assert G.sparkline([], color=False) == ""
 
 
-def test_sparkline_all_zero_uses_lowest_block():
+def test_sparkline_all_zero_uses_lowest_bar():
     assert G.sparkline([0, 0, 0], color=False) == "▁▁▁"
+
+
+def test_sparkline_peak_is_top_of_ramp():
+    # Peak value renders as ▇ (last char of "▁▂▃▄▅▆▇").
+    out = G.sparkline([1, 1, 100], color=False)
+    assert out.endswith("▇")
 
 
 def test_progress_bar_partial():

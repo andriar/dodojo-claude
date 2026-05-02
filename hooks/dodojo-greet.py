@@ -531,18 +531,33 @@ _OS = _platform.system().lower()  # 'linux' | 'darwin' | 'windows'
 # without proper monospace + unicode block coverage (cmd.exe, default
 # Cascadia weights). macOS keeps unicode blocks (Menlo/SFMono OK).
 GLYPHS = {
-    "linux":   {"bars": "▁▂▃▄▅▆▇█", "fill": "▰", "empty": "▱", "div": "─", "dot": "·"},
-    # macOS SFMono/Menlo render U+25B0/U+25B1 (▰▱) as italic parallelograms
-    # that look like ══ — use solid block + light shade for true monospace.
-    "darwin":  {"bars": "▁▂▃▄▅▆▇█", "fill": "█", "empty": "░", "div": "─", "dot": "·"},
+    # Sparkline glyphs must stay strictly within cell baseline. Lower-block
+    # Unicode chars (U+2581-U+2588) bleed into adjacent rows in most popular
+    # monospace fonts (JetBrains Mono, Hack, SFMono, Cascadia, MonaSpace).
+    # ASCII shading set is ugly but font-safe everywhere. Bar fill / divider
+    # chars stay Unicode since they only render on a single dedicated row.
+    # Sparkline uses lower-block glyphs U+2581..U+2587. Drop full block
+    # U+2588 — its 8/8 cell height bleeds into adjacent rows in many fonts.
+    # Banner adds a blank line between sessions and tools rows for breathing
+    # room; the ramp itself stays bounded to 7/8 cell height.
+    "linux":   {"bars": "▁▂▃▄▅▆▇", "fill": "▰", "empty": "▱", "div": "─", "dot": "·"},
+    "darwin":  {"bars": "▁▂▃▄▅▆▇", "fill": "█", "empty": "░", "div": "─", "dot": "·"},
     "windows": {"bars": "_.-=+*#@", "fill": "#", "empty": "-", "div": "-", "dot": "."},
 }
 G = GLYPHS.get(_OS, GLYPHS["linux"])
 
 
 def sparkline(values: list[int], color: bool = True) -> str:
+    """Vertical bar sparkline — magnitude via ▁▂▃▄▅▆▇ glyphs.
+
+    Caller must give breathing room around the row (blank line above and
+    below) — these glyphs visually extend slightly above the cell baseline
+    in some monospace fonts and crowd adjacent rows without spacing.
+    """
     bars = G["bars"]
-    if not values or max(values) == 0:
+    if not values:
+        return ""
+    if max(values) == 0:
         return DIM + bars[0] * len(values) + RESET
     peak = max(values)
     s = "".join(bars[min(len(bars) - 1, int(c / peak * (len(bars) - 1)))] for c in values)
@@ -747,17 +762,28 @@ def main() -> int:
     # Header
     timestamp = time.strftime("%a · %b %d · %H:%M")
     sig_part = f"  {ACCENT}{sig}{RESET}" if sig else ""
+    # Read plugin version from sibling .claude-plugin/plugin.json — lets the
+    # banner advertise which build is rendering, exposing stale-cache cases.
+    plugin_version = "?"
+    try:
+        pj = Path(__file__).resolve().parent.parent / ".claude-plugin" / "plugin.json"
+        plugin_version = json.loads(pj.read_text()).get("version", "?")
+    except (OSError, json.JSONDecodeError, ValueError):
+        pass
     out.append("")
     out.append(f"  {BOLD}{ACCENT}{_icon('brand')}  D O D O J O{RESET}   {DIM}{tagline}{RESET}  {GRAY}{DIM}[{THEME_NAME}]{RESET}{sig_part}")
-    out.append(f"  {GRAY}{timestamp}{RESET}")
+    out.append(f"  {GRAY}{timestamp}{RESET}  {DIM}v{plugin_version}{RESET}")
     out.append(f"  {sep_thin}")
     out.append("")
 
     # Pulse
     out.append(f"  {section('Pulse', _icon('pulse'))}  {DIM}last 7 days{RESET}")
     out.append("")
-    out.append(f"     {GRAY}sessions{RESET}   {sparkline(sess_7)}   {BOLD}{sess_total:>3}{RESET} total  {sess_trend}")
-    out.append(f"     {GRAY}tools   {RESET}   {sparkline(tool_7)}   {BOLD}{tool_total:>3}{RESET} calls  {tool_trend}")
+    # Vertical sparkline glyphs need breathing room — insert a blank line
+    # between sessions and tools so the ramps don't crowd each other.
+    out.append(f"     {GRAY}sessions{RESET}   {sparkline(sess_7)}   {BOLD}{sess_total:>4}{RESET} total  {sess_trend}")
+    out.append("")
+    out.append(f"     {GRAY}tools   {RESET}   {sparkline(tool_7)}   {BOLD}{tool_total:>4}{RESET} calls  {tool_trend}")
     if files_7d or sc_7d:
         out.append(f"     {GRAY}also{RESET}        {files_7d} files touched · {sc_7d} memory matches")
     out.append("")
