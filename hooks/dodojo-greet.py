@@ -12,6 +12,7 @@ import json
 import os
 import random
 import re
+import sys
 import time
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -863,7 +864,8 @@ def main() -> int:
     out.append(f"  {DIM}{_icon('spark')}  tip{RESET}  {tip}")
     out.append("")
 
-    print("\n".join(out))
+    banner = "\n".join(out)
+    sys.stdout.write(json.dumps({"systemMessage": banner}))
     return 0
 
 
