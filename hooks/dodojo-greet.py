@@ -472,15 +472,13 @@ GRAY = T["gray"]
 
 TIPS = [
     "/audit-context — token budget snapshot",
-    "/hook-health — smoke-test all 12 hooks",
+    "/hook-health — smoke-test all hooks",
     "/recall <query> — cross-silo search (memory + git + vault)",
     "/new-skill — scaffold skill, auto-register in 5s",
     "/archive-orphans — prune unused memories (dry-run default)",
     "smart-context boosts cwd-matching memories 2× score",
     "cost-guard auto-blocks `find /` and `rm -rf ~`",
-    "Daily rollup → Vault/Daily/ at 07:30",
     "Sensei ingests hook telemetry — weekly digest is richer",
-    "Vault/Kagami/ has full ecosystem docs with diagrams",
     "/caveman cuts response tokens ~75%",
 ]
 
@@ -820,7 +818,7 @@ def main() -> int:
     out.append(f"  {sep_dot}")
     saved = savings_7d()
     if saved > 0:
-        out.append(f"  {DIM}{_icon('saved')}  saved{RESET}  {GREEN}{BOLD}~{fmt_tok(saved)}{RESET} {DIM}tokens last 7d (Kagami stack){RESET}")
+        out.append(f"  {DIM}{_icon('saved')}  saved{RESET}  {GREEN}{BOLD}~{fmt_tok(saved)}{RESET} {DIM}tokens last 7d (DoDojo stack){RESET}")
     out.append(f"  {DIM}{_icon('spark')}  tip{RESET}  {tip}")
     out.append("")
 
