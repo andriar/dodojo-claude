@@ -1,0 +1,51 @@
+{
+  "SessionStart": [
+    {
+      "hooks": [
+        {
+          "type": "command",
+          "command": "${CLAUDE_PLUGIN_ROOT}/hooks/dodojo-greet.sh",
+          "timeout": 5,
+          "statusMessage": "Loading DoDojo..."
+        }
+      ]
+    }
+  ],
+  "UserPromptSubmit": [
+    {
+      "hooks": [
+        { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/hooks/inject-git-context.sh", "timeout": 3 },
+        { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/hooks/smart-context.sh",       "timeout": 5 },
+        { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/hooks/skill-suggest.sh",       "timeout": 3 },
+        { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/hooks/memory-trigger.sh",      "timeout": 3 }
+      ]
+    }
+  ],
+  "PreToolUse": [
+    {
+      "matcher": "Bash|Write|Edit|MultiEdit",
+      "hooks": [
+        { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/hooks/secret-guard.sh", "timeout": 3 }
+      ]
+    },
+    {
+      "matcher": "Bash",
+      "hooks": [
+        { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/hooks/force-push-guard.sh", "timeout": 3 }
+      ]
+    },
+    {
+      "matcher": "Bash|Read",
+      "hooks": [
+        { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/hooks/cost-guard.sh", "timeout": 3 }
+      ]
+    }
+  ],
+  "Stop": [
+    {
+      "hooks": [
+        { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/hooks/session-summary.sh", "timeout": 5 }
+      ]
+    }
+  ]
+}

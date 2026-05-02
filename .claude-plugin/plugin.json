@@ -1,7 +1,7 @@
 {
   "name": "dodojo",
   "description": "Quiet tools for AI-assisted dev. Memory, pattern coach, smart context, and audit — keeps your Claude Code workflow lean.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": {
     "name": "Andri",
     "url": "https://github.com/andriar"
@@ -9,55 +9,5 @@
   "homepage": "https://github.com/andriar/dodojo-claude",
   "repository": "https://github.com/andriar/dodojo-claude",
   "license": "MIT",
-  "hooks": {
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/dodojo-greet.sh",
-            "timeout": 5,
-            "statusMessage": "Loading DoDojo..."
-          }
-        ]
-      }
-    ],
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/hooks/inject-git-context.sh", "timeout": 3 },
-          { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/hooks/smart-context.sh",       "timeout": 5 },
-          { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/hooks/skill-suggest.sh",       "timeout": 3 },
-          { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/hooks/memory-trigger.sh",      "timeout": 3 }
-        ]
-      }
-    ],
-    "PreToolUse": [
-      {
-        "matcher": "Bash|Write|Edit|MultiEdit",
-        "hooks": [
-          { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/hooks/secret-guard.sh", "timeout": 3 }
-        ]
-      },
-      {
-        "matcher": "Bash",
-        "hooks": [
-          { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/hooks/force-push-guard.sh", "timeout": 3 }
-        ]
-      },
-      {
-        "matcher": "Bash|Read",
-        "hooks": [
-          { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/hooks/cost-guard.sh", "timeout": 3 }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/hooks/session-summary.sh", "timeout": 5 }
-        ]
-      }
-    ]
-  }
+  "hooks": "./hooks.json"
 }
