@@ -119,9 +119,29 @@ ICON_SETS = {
     },
 }
 
-ICON_MODE = os.environ.get("KAGAMI_ICONS", "nerd").strip().lower()
-if ICON_MODE not in ICON_SETS:
-    ICON_MODE = "nerd"
+def _resolve_icon_mode() -> str:
+    env = os.environ.get("KAGAMI_ICONS", "").strip().lower()
+    if env in ICON_SETS:
+        return env
+    f = DODOJO_DATA / ".dodojo-icons"
+    if f.exists():
+        v = f.read_text().strip().lower()
+        if v in ICON_SETS:
+            return v
+    # Auto-detect: env hints from terminal / Nerd Font installs
+    if os.environ.get("NERD_FONT") or os.environ.get("KAGAMI_NERD"):
+        return "nerd"
+    try:
+        import subprocess
+        r = subprocess.run(["fc-list"], capture_output=True, text=True, timeout=1)
+        if r.returncode == 0 and "nerd" in r.stdout.lower():
+            return "nerd"
+    except Exception:
+        pass
+    # Safe default — unicode renders on every modern terminal
+    return "unicode"
+
+ICON_MODE = _resolve_icon_mode()
 
 
 def _icon(name: str) -> str:
