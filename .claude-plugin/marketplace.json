@@ -6,11 +6,19 @@
     "name": "Andri",
     "url": "https://github.com/andriar"
   },
+  "metadata": {
+    "description": "Quiet tools for AI-assisted dev — memory, coach, smart context, audit.",
+    "version": "0.1.0"
+  },
   "plugins": [
     {
       "name": "dodojo",
       "description": "Stop wasting your Claude Code tokens. Captures what matters (Mirror), surfaces patterns worth automating (Coach), prunes what's unused.",
-      "source": "./",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/andriar/dodojo-claude.git"
+      },
+      "version": "0.1.0",
       "category": "productivity"
     }
   ]
