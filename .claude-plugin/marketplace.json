@@ -1,0 +1,17 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "dodojo",
+  "description": "Quiet tools for AI-assisted dev — memory, coach, smart context, audit.",
+  "owner": {
+    "name": "Andri",
+    "url": "https://github.com/andriar"
+  },
+  "plugins": [
+    {
+      "name": "dodojo",
+      "description": "Stop wasting your Claude Code tokens. Captures what matters (Mirror), surfaces patterns worth automating (Coach), prunes what's unused.",
+      "source": "./",
+      "category": "productivity"
+    }
+  ]
+}
