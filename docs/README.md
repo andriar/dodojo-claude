@@ -4,12 +4,16 @@ Short topical fragments — one concern each.
 
 | Topic | What it covers |
 |-------|----------------|
+| [positioning.md](positioning.md) | DoDojo vs caveman vs claude-mem — what each layer does |
+| [sensei.md](sensei.md) | Sensei opt-in rationale, setup cascade, privacy modes |
 | [audit.md](audit.md) | Memory audit + orphan detection |
 | [health.md](health.md) | Hook health smoke-test |
 | [icons.md](icons.md) | `KAGAMI_ICONS` modes (nerd / unicode / emoji) |
 | [prune.md](prune.md) | Pruning rules + lifecycle |
 | [status.md](status.md) | Greeter pulse stats explanation |
 | [theme.md](theme.md) | Greeter themes + `KAGAMI_THEME` |
+
+Project goal tracking → [ROADMAP.md](../ROADMAP.md).
 
 ## Hooks (registered in `hooks.json`)
 

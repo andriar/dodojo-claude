@@ -4,6 +4,8 @@ Quiet tools for AI-assisted dev. Memory, pattern coach, smart context, and audit
 
 > Built for indie hackers tired of watching their tokens drain on Claude Code Max.
 
+![DoDojo greeter — pulse, memory health, route, buddy, XP, quick actions](docs/assets/image-1.png)
+
 ## What it does
 
 | Layer | Role | What it does |
@@ -63,9 +65,13 @@ Manual env vars (override or skip the wizard):
 
 Sensei mines work patterns from shell history + git log → ranks by ROI → writes weekly markdown report.
 
-Easiest setup: `/dodojo:init` (or `scripts/dodojo-init.sh`) prompts for vault + repos + history paths. Manual override via `~/.claude/settings.json` `env` block (`SENSEI_VAULT`, `SENSEI_REPOS` colon-separated, `SENSEI_HISTORY`).
+Easiest setup: `/dodojo:init` (or `scripts/dodojo-init.sh`) prompts to enable, then auto-detects an Obsidian vault. No Obsidian? Falls back to `~/.claude/dodojo/sensei/reports/`. Manual override via `~/.claude/settings.json` `env` block (`SENSEI_VAULT`, `SENSEI_REPOS` colon-separated, `SENSEI_HISTORY`).
 
-Defaults assume zsh + Obsidian at standard paths. State (weights, feedback, raw events) lives at `~/.claude/dodojo/sensei/` — user-local, never in plugin cache.
+Privacy: shell history scrape strips command args by default (cmd name only). Set `SENSEI_FULL_HISTORY=1` to keep full args.
+
+State (weights, feedback, raw events) lives at `~/.claude/dodojo/sensei/` — user-local, never in plugin cache.
+
+Full setup cascade + privacy modes: [docs/sensei.md](docs/sensei.md). Where DoDojo sits vs caveman + claude-mem: [docs/positioning.md](docs/positioning.md).
 
 Trigger weekly report:
 ```bash
@@ -86,7 +92,7 @@ DoDojo focuses on memory + audit. Pair with these for a full optimization stack:
 - **[claude-mem](https://github.com/thedotmack/claude-mem)** — auto-summarizes long sessions
 - **RTK** — trims shell command output (Rust-based proxy)
 - **[caveman](https://github.com/JuliusBrussee/caveman)** — compresses prompt/response style
-- **pokemon-buddy** — gamified XP system (companion plugin)
+- **[pokemon-buddy](https://github.com/andriar/pokemon-buddy-claude)** — gamified XP system (companion plugin)
 
 ## Docs
 

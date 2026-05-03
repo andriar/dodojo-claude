@@ -30,14 +30,23 @@ filter_secrets() {
 CUTOFF=$(date -d "$DAYS days ago" +%s 2>/dev/null || date -v-"${DAYS}"d +%s)
 
 # 1. zsh history — extended format ": <ts>:<dur>;<cmd>"
+# Default: strip args, keep cmd name only (privacy + smaller surface for secrets in flags).
+# Opt-in full args: SENSEI_FULL_HISTORY=1
 collect_zsh() {
   local hist="$SENSEI_HISTORY"
   [ -f "$hist" ] || { echo ""; return; }
-  awk -F';' -v cutoff="$CUTOFF" '
+  local full="${SENSEI_FULL_HISTORY:-0}"
+  awk -F';' -v cutoff="$CUTOFF" -v full="$full" '
     /^: [0-9]+:[0-9]+;/ {
       split($1, a, ":"); ts=a[2]+0
       if (ts >= cutoff) {
         cmd=$0; sub(/^: [0-9]+:[0-9]+;/, "", cmd)
+        if (full != "1") {
+          # Strip args: keep first word only (cmd name).
+          # Also strip env-var prefix like "FOO=bar cmd".
+          sub(/^([A-Za-z_][A-Za-z0-9_]*=[^ ]* +)+/, "", cmd)
+          n=split(cmd, parts, " "); cmd=parts[1]
+        }
         print ts "\t" cmd
       }
     }

@@ -158,15 +158,32 @@ if [ "$PRINT_ONLY" -eq 1 ]; then
 fi
 
 # --quick: write defaults silently, install greeter, run audit, exit
+# Auto-detect Obsidian vault — first existing wins. Fallback = Sensei state dir.
+detect_vault() {
+  local candidates=(
+    "$HOME/Documents/Obsidian Vault"
+    "$HOME/Obsidian"
+    "$HOME/vaults"
+    "$HOME/Documents/vaults"
+  )
+  for base in "${candidates[@]}"; do
+    if [ -d "$base" ]; then
+      echo "$base/Sensei"; return
+    fi
+  done
+  echo "$HOME/.claude/dodojo/sensei/reports"
+}
+
 apply_defaults() {
   write_env "KAGAMI_THEME" "default"
   write_env "KAGAMI_ICONS" "nerd"
   write_env "KAGAMI_COLOR" "1"
   write_env "DODOJO_GREETER_MODE" "terminal"
-  write_env "SENSEI_VAULT" "$HOME/Documents/Obsidian Vault/Sensei"
+  local vault; vault=$(detect_vault)
+  write_env "SENSEI_VAULT" "$vault"
   write_env "SENSEI_REPOS" "$HOME/Development"
   write_env "SENSEI_HISTORY" "$HOME/.zsh_history"
-  mkdir -p "$HOME/Documents/Obsidian Vault/Sensei"
+  mkdir -p "$vault"
   local installer
   installer="$(dirname "$0")/dodojo-greeter-install.sh"
   [ -x "$installer" ] && "$installer" install >/dev/null 2>&1 || true
@@ -250,16 +267,17 @@ dim  "Sensei reads shell history + git log to detect repetitive work, scores by 
 dim  "writes weekly markdown report. State at ~/.claude/dodojo/sensei/."
 ENABLE_SENSEI=$(yn_simple "Enable Sensei?" "1" "If no, /sensei command stays available but reports nothing useful until env vars set later.")
 if [ "$ENABLE_SENSEI" = "1" ]; then
+  DETECTED_VAULT=$(detect_vault)
   SENSEI_DEFAULTS=$(yn_simple "Use sensei defaults?" "1" \
-    "Yes = vault=~/Documents/Obsidian Vault/Sensei, repos=~/Development, history=~/.zsh_history. No = walk 3 path prompts.")
+    "Yes = vault=$DETECTED_VAULT (auto-detected), repos=~/Development, history=~/.zsh_history. No = walk 3 path prompts.")
   if [ "$SENSEI_DEFAULTS" = "1" ]; then
-    write_env "SENSEI_VAULT" "$HOME/Documents/Obsidian Vault/Sensei"
+    write_env "SENSEI_VAULT" "$DETECTED_VAULT"
     write_env "SENSEI_REPOS" "$HOME/Development"
     write_env "SENSEI_HISTORY" "$HOME/.zsh_history"
-    mkdir -p "$HOME/Documents/Obsidian Vault/Sensei"
+    mkdir -p "$DETECTED_VAULT"
   else
-    VAULT=$(read_path "SENSEI_VAULT" "SENSEI_VAULT — output dir for weekly markdown" "$HOME/Documents/Obsidian Vault/Sensei" \
-      "Affects: where weekly-YYYY-MM-DD.md files land. Use Obsidian vault path for auto-indexed notes, OR any plain folder if you don't use Obsidian.")
+    VAULT=$(read_path "SENSEI_VAULT" "SENSEI_VAULT — output dir for weekly markdown" "$DETECTED_VAULT" \
+      "Affects: where weekly-YYYY-MM-DD.md files land. Use Obsidian vault path for auto-indexed notes, OR any plain folder if you don't use Obsidian. Default = auto-detected vault or Sensei state dir fallback.")
     write_env "SENSEI_VAULT" "$VAULT"
     mkdir -p "$VAULT" && dim "  created $VAULT"
 
