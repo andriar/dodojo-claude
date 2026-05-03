@@ -90,7 +90,17 @@ If user enabled Sensei: also `mkdir -p "$SENSEI_VAULT"`.
 
 ## Final output
 
-Print resolved env block (`bash ${CLAUDE_PLUGIN_ROOT}/scripts/dodojo-init.sh --print`) and remind:
+Print resolved env block (`bash ${CLAUDE_PLUGIN_ROOT}/scripts/dodojo-init.sh --print`).
+
+Then run companion plugin audit (read-only, advisory):
+
+```bash
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/companions-audit.py
+```
+
+This surfaces which of `caveman`, `claude-mem`, `pokemon-buddy-claude` are installed and prints `/plugin install ...` commands for any missing. DoDojo runs fine standalone — these are nice-to-haves.
+
+Then remind:
 
 > Restart Claude Code to load new settings.
 

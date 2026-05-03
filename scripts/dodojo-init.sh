@@ -190,5 +190,13 @@ read -rp "  Override path? (leave blank to keep ~/.claude default): " DD
 echo
 cyan "✓ Wrote env to $SETTINGS"
 print_current
+
+# 7. Companion plugins audit (read-only, advisory)
+AUDIT="$(dirname "$0")/companions-audit.py"
+if [ -x "$AUDIT" ] || [ -f "$AUDIT" ]; then
+  echo
+  python3 "$AUDIT" || true
+fi
+
 echo
 dim "Restart Claude Code to load new settings."
