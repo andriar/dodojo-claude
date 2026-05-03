@@ -41,6 +41,7 @@ fi
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PLUGIN="$REPO/.claude-plugin/plugin.json"
 MARKET="$REPO/.claude-plugin/marketplace.json"
+CHANGELOG="$REPO/CHANGELOG.md"
 
 OLD=$(python3 -c "import json; print(json.load(open('$PLUGIN'))['version'])")
 echo "Bumping $OLD → $NEW"
@@ -67,6 +68,28 @@ with open(market_path, "w") as f:
 PY
 
 cd "$REPO"
+
+# Promote [Unreleased] section in CHANGELOG.md to [NEW] - YYYY-MM-DD
+if [ -f "$CHANGELOG" ]; then
+  python3 - "$CHANGELOG" "$NEW" <<'PY'
+import sys, datetime, re
+path, new = sys.argv[1], sys.argv[2]
+text = open(path).read()
+today = datetime.date.today().isoformat()
+# Replace first "## [Unreleased]" with new heading + insert fresh Unreleased above
+m = re.search(r"^## \[Unreleased\][^\n]*\n", text, re.MULTILINE)
+if m:
+    head = text[:m.start()]
+    rest = text[m.end():]
+    text = head + f"## [Unreleased]\n\n## [{new}] - {today}\n" + rest
+    open(path, "w").write(text)
+    print(f"✓ CHANGELOG promoted Unreleased → {new}")
+else:
+    print("· CHANGELOG has no [Unreleased] section — skip")
+PY
+  git add CHANGELOG.md
+fi
+
 git add .claude-plugin/plugin.json .claude-plugin/marketplace.json
 git commit -m "Release v$NEW"
 

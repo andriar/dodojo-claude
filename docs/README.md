@@ -48,11 +48,13 @@ Short topical fragments — one concern each.
 ## Releasing
 
 ```bash
+# 1. Add notes under [Unreleased] in CHANGELOG.md
+# 2. Bump (auto-promotes Unreleased → new version)
 scripts/bump.sh 0.2.4
 git push && git push --tags
 ```
 
-Updates `.claude-plugin/plugin.json` + `.claude-plugin/marketplace.json` together so versions don't drift.
+Updates `.claude-plugin/plugin.json` + `.claude-plugin/marketplace.json` + `CHANGELOG.md` together so versions and notes don't drift.
 
 ## Tests
 
