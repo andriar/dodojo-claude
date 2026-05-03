@@ -21,6 +21,7 @@ Short topical fragments — one concern each.
 | `smart-context.py` | UserPromptSubmit | Rank memory files vs prompt; inject top matches |
 | `skill-suggest.py` | UserPromptSubmit | Hint relevant custom skills |
 | `memory-trigger.py` | UserPromptSubmit | Detect save/remember phrases; nudge auto-reflect |
+| `model-route.py` | UserPromptSubmit | Classify prompt → suggest model + effort (haiku/sonnet/opus). Rules at `routing/` (plugin) + `~/.claude/memory/routing/` (user override) |
 | `secret-guard.sh` | PreToolUse | Block secrets in tool args |
 | `force-push-guard.sh` | PreToolUse | Block force-push to main/master/develop |
 | `cost-guard.py` | PreToolUse | Block runaway ops (`find /`, `rm -rf /`, etc.) |
@@ -42,7 +43,7 @@ Short topical fragments — one concern each.
 
 ## Skills (bundled)
 
-`archive-orphans`, `audit-context`, `companions`, `hook-health`, `memory-curator`, `new-skill`, `pr-describe`, `recall`, `repro-this`, `sensei` — see each `SKILL.md` for trigger phrases.
+`archive-orphans`, `audit-context`, `companions`, `hook-health`, `memory-curator`, `new-skill`, `pr-describe`, `recall`, `repro-this`, `route-tune`, `sensei` — see each `SKILL.md` for trigger phrases.
 
 ## Releasing
 

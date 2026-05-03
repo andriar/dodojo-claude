@@ -24,7 +24,8 @@
           { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/hooks/inject-git-context.sh", "timeout": 3000 },
           { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/hooks/smart-context.py",      "timeout": 5000 },
           { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/hooks/skill-suggest.py",      "timeout": 3000 },
-          { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/hooks/memory-trigger.py",     "timeout": 3000 }
+          { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/hooks/memory-trigger.py",     "timeout": 3000 },
+          { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/hooks/model-route.py",       "timeout": 3000 }
         ]
       }
     ],

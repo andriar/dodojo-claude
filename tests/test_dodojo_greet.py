@@ -93,6 +93,32 @@ def test_sh_passthrough_single_print(tmp_path):
     assert out.count("D O D O J O") <= 1, "banner duplicated — double-print regression"
 
 
+def test_route_section_renders_when_log_present(tmp_path):
+    import time as _t
+    env = _greet_env(tmp_path)
+    log = tmp_path / "data" / "hooks" / "model-route.log"
+    log.parent.mkdir(parents=True, exist_ok=True)
+    now = int(_t.time())
+    rows = []
+    for v in ("trivial", "trivial", "medium", "hard"):
+        rows.append(json.dumps({
+            "ts": now, "verdict": v, "source": "plugin:rule.md",
+            "model": "x", "effort": "x", "prompt_len": 80, "prompt_head": "x",
+        }))
+    rows.append(json.dumps({
+        "ts": now, "verdict": "medium", "source": "len-default",
+        "model": "x", "effort": "x", "prompt_len": 80, "prompt_head": "x",
+    }))
+    log.write_text("\n".join(rows) + "\n")
+    r = _run([sys.executable, str(HOOKS / "dodojo-greet.py")], env=env)
+    assert r.returncode == 0, r.stderr
+    import re as _re
+    plain = _re.sub(r"\x1b\[[0-9;]*m", "", r.stdout)
+    assert "Route" in plain
+    assert "5 prompts" in plain
+    assert "uncovered" in plain
+
+
 def test_sh_matches_py_output(tmp_path):
     # .sh wrapper forces KAGAMI_COLOR=0 (inline → Claude context, ANSI shows literal).
     # Compare against py invoked with the same color env.

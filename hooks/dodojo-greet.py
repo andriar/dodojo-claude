@@ -26,6 +26,7 @@ SENSEI_LAST = SENSEI_STATE / "last_scored.json"
 SENSEI_FB = SENSEI_STATE / "feedback.jsonl"
 DRAFTS = DODOJO_DATA / "skills" / "_drafts"
 SC_LOG = DODOJO_DATA / "hooks" / "smart-context.log"
+ROUTE_LOG = DODOJO_DATA / "hooks" / "model-route.log"
 SESSIONS = DODOJO_DATA / "sessions"
 MEM_DIR = DODOJO_DATA / "memory"
 
@@ -774,9 +775,26 @@ def main() -> int:
 
     bd = buddy_summary()
 
+    # --- Route stats (model-route hook) ---
+    route_total_7d = 0
+    route_mix = {"trivial": 0, "medium": 0, "hard": 0}
+    route_uncovered = 0
+    if ROUTE_LOG.is_file():
+        cutoff = time.time() - 7 * 86400
+        for r in load_jsonl_n(ROUTE_LOG, 500):
+            if r.get("ts", 0) < cutoff:
+                continue
+            v = r.get("verdict")
+            if v in route_mix:
+                route_mix[v] += 1
+                route_total_7d += 1
+            src = r.get("source", "")
+            if src in ("len-default", "default"):
+                route_uncovered += 1
+
     # Auto-suppress if zero state
     if (sess_total == 0 and not alerts and not xp and sensei_pending == 0
-            and not drafts and sc_7d == 0 and not bd.get("name")):
+            and not drafts and sc_7d == 0 and not bd.get("name") and route_total_7d == 0):
         return 0
 
     # === Render ===
@@ -849,6 +867,20 @@ def main() -> int:
         if mem_orphans:
             color = YELLOW if mem_orphans > 5 else GRAY
             out.append(f"     {color}{mem_orphans} orphan{RESET}  {DIM}— /archive-orphans after telemetry warms{RESET}")
+        out.append("")
+
+    # Route (model-route stats, 7-day)
+    if route_total_7d > 0:
+        out.append(f"  {section('Route', _icon('pulse'))}  {DIM}last 7 days{RESET}")
+        out.append("")
+        t = route_mix["trivial"]; m = route_mix["medium"]; h = route_mix["hard"]
+        n = route_total_7d
+        pt = int(t / n * 100); pm = int(m / n * 100); ph = int(h / n * 100)
+        out.append(f"     {BOLD}{n}{RESET} prompts  ·  {GRAY}trivial{RESET} {pt}%  {GRAY}medium{RESET} {pm}%  {GRAY}hard{RESET} {ph}%")
+        if route_uncovered and n:
+            uncov_pct = int(route_uncovered / n * 100)
+            color = YELLOW if uncov_pct > 30 else GRAY
+            out.append(f"     {color}{route_uncovered} uncovered{RESET}  {DIM}({uncov_pct}% fell to default — /route-tune to refine{RESET})")
         out.append("")
 
     # Sensei

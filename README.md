@@ -12,6 +12,7 @@ Quiet tools for AI-assisted dev. Memory, pattern coach, smart context, and audit
 | **Coach** (Sensei) | pattern coach | Mines work patterns → ranks by ROI → recommends automations weekly *(opt-in, requires env setup — see below)* |
 | **Context** | smart retrieval | Injects only the memories relevant to your current prompt |
 | **Audit** | prune | Archives unused memories/skills so your stack stays lean |
+| **Route** | model picker | Classifies each prompt → suggests model + effort (haiku/sonnet/opus). Override rules at `~/.claude/memory/routing/` |
 | **Meter** | observability | Token-saved counter on every session start |
 
 ## Why it exists
