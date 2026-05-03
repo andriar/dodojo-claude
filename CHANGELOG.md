@@ -4,6 +4,8 @@ All notable changes documented here. Format follows [Keep a Changelog](https://k
 
 ## [Unreleased]
 
+## [0.3.25] - 2026-05-03
+
 ### Added
 - `docs/positioning.md` — DoDojo vs caveman vs claude-mem (orthogonal layers)
 - `docs/sensei.md` — opt-in rationale, setup cascade, privacy modes, roadmap
