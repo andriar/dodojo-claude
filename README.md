@@ -34,7 +34,21 @@ Or local development:
 
 ## Configure
 
-Optional environment variables:
+Run the setup wizard once after install:
+
+```bash
+# In Claude Code:
+/dodojo:init
+
+# Or headless / CI:
+bash ~/.claude/plugins/cache/dodojo/dodojo/<version>/scripts/dodojo-init.sh
+```
+
+Both prompt for theme, icons, color, silent mode, and Coach (Sensei) paths — then write to `~/.claude/settings.json` `env` block. Same questions, same outcome.
+
+Show current values: `bash .../dodojo-init.sh --print` · Reset: `--reset`.
+
+Manual env vars (override or skip the wizard):
 
 | Var | Default | Purpose |
 |-----|---------|---------|
@@ -46,21 +60,11 @@ Optional environment variables:
 
 ## Coach (Sensei) — opt-in
 
-Sensei mines work patterns from shell history + git log → ranks by ROI → writes weekly markdown report. Disabled by default until you set env vars.
+Sensei mines work patterns from shell history + git log → ranks by ROI → writes weekly markdown report.
 
-Add to `~/.claude/settings.json` under `env`:
+Easiest setup: `/dodojo:init` (or `scripts/dodojo-init.sh`) prompts for vault + repos + history paths. Manual override via `~/.claude/settings.json` `env` block (`SENSEI_VAULT`, `SENSEI_REPOS` colon-separated, `SENSEI_HISTORY`).
 
-```json
-{
-  "env": {
-    "SENSEI_VAULT": "/home/you/Documents/Obsidian Vault/Sensei",
-    "SENSEI_HISTORY": "/home/you/.zsh_history",
-    "SENSEI_REPOS": "/home/you/Development:/home/you/work"
-  }
-}
-```
-
-Or export in your shell rc. Defaults assume zsh + Obsidian at standard paths. State (weights, feedback, raw events) lives at `~/.claude/dodojo/sensei/` — user-local, never in plugin cache.
+Defaults assume zsh + Obsidian at standard paths. State (weights, feedback, raw events) lives at `~/.claude/dodojo/sensei/` — user-local, never in plugin cache.
 
 Trigger weekly report:
 ```bash
