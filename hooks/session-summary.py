@@ -28,6 +28,27 @@ from pathlib import Path
 
 HOME = Path.home()
 DODOJO_DATA = Path(os.environ.get("DODOJO_DATA") or str(HOME / ".claude"))
+
+
+def _resolve_buddy_dir() -> Path:
+    """Discover where pokemon-buddy plugin stores state.
+
+    Plugin hardcodes ~/.claude/ but user may relocate. Cascade:
+    1. POKEMON_BUDDY_HOME env override
+    2. Probe known candidates for sentinel file
+    3. Fallback to plugin default ~/.claude/
+    """
+    if env := os.environ.get("POKEMON_BUDDY_HOME"):
+        p = Path(env).expanduser()
+        if p.is_dir():
+            return p
+    for cand in (HOME / ".claude", DODOJO_DATA, HOME / ".pokemon-buddy"):
+        if (cand / "buddy-pokemon.md").is_file():
+            return cand
+    return HOME / ".claude"
+
+
+BUDDY_HOME = _resolve_buddy_dir()
 SESSIONS_DIR = DODOJO_DATA / "sessions"
 TOUCH_TOOLS = {"Read", "Write", "Edit", "MultiEdit", "NotebookEdit"}
 
@@ -144,7 +165,7 @@ def main() -> int:
     # (>= 5 tool invocations AND touched at least one file). Pokemon Coach skill /
     # SessionStart greeter can surface this for /poke:xp claim.
     if record["tool_total"] >= 5 and record["files_touched_count"] >= 1:
-        xp_log = DODOJO_DATA / "buddy-xp-pending.jsonl"
+        xp_log = BUDDY_HOME / "buddy-xp-pending.jsonl"
         xp_record = {
             "ts": record["ts"],
             "iso": record["iso"],

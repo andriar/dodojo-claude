@@ -21,7 +21,6 @@ HOME = Path.home()
 DODOJO_DATA = Path(os.environ.get("DODOJO_DATA") or str(HOME / ".claude"))
 
 ALERTS = DODOJO_DATA / "alerts.jsonl"
-XP_QUEUE = DODOJO_DATA / "buddy-xp-pending.jsonl"
 SENSEI_STATE = Path(os.environ.get("SENSEI_STATE") or DODOJO_DATA / "dodojo" / "sensei")
 SENSEI_LAST = SENSEI_STATE / "last_scored.json"
 SENSEI_FB = SENSEI_STATE / "feedback.jsonl"
@@ -29,8 +28,30 @@ DRAFTS = DODOJO_DATA / "skills" / "_drafts"
 SC_LOG = DODOJO_DATA / "hooks" / "smart-context.log"
 SESSIONS = DODOJO_DATA / "sessions"
 MEM_DIR = DODOJO_DATA / "memory"
-BUDDY_POKE = DODOJO_DATA / "buddy-pokemon.md"
-BUDDY_STATS = DODOJO_DATA / "buddy-stats.md"
+
+
+def _resolve_buddy_dir() -> Path:
+    """Discover where pokemon-buddy plugin stores state.
+
+    Plugin hardcodes ~/.claude/ but user may relocate. Cascade:
+    1. POKEMON_BUDDY_HOME env override
+    2. Probe known candidates for sentinel file
+    3. Fallback to plugin default ~/.claude/
+    """
+    if env := os.environ.get("POKEMON_BUDDY_HOME"):
+        p = Path(env).expanduser()
+        if p.is_dir():
+            return p
+    for cand in (HOME / ".claude", DODOJO_DATA, HOME / ".pokemon-buddy"):
+        if (cand / "buddy-pokemon.md").is_file():
+            return cand
+    return HOME / ".claude"
+
+
+BUDDY_HOME = _resolve_buddy_dir()
+BUDDY_POKE = BUDDY_HOME / "buddy-pokemon.md"
+BUDDY_STATS = BUDDY_HOME / "buddy-stats.md"
+XP_QUEUE = BUDDY_HOME / "buddy-xp-pending.jsonl"
 
 USE_COLOR = os.environ.get("KAGAMI_COLOR", "0") == "1"
 
