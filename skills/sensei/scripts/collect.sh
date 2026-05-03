@@ -60,7 +60,8 @@ collect_git() {
   for root in "${roots[@]}"; do
     [ -d "$root" ] || continue
     find "$root" -maxdepth 4 -name ".git" -type d 2>/dev/null | while read -r gitdir; do
-      local repo="$(dirname "$gitdir")"
+      local repo
+      repo="$(dirname "$gitdir")"
       git -C "$repo" log --since="$DAYS days ago" --pretty=format:"%at%x09%H%x09%s%x09%an" 2>/dev/null \
         | filter_secrets | awk -v r="$repo" -F'\t' '{print $1"\tgit\t"r"\t"$3}'
     done
