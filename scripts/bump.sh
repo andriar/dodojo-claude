@@ -121,11 +121,13 @@ if [ -d "$(dirname "$CACHE_DIR")" ] || [ -d "$MKT_DIR" ]; then
   echo "✓ cache rebuilt: $CACHE_DIR/$NEW"
 fi
 
-# 3. Update installed_plugins.json pin
+# 3. Update installed_plugins.json pin (incl. gitCommitSha — mismatch nukes cache)
 if [ -f "$INSTALLED" ]; then
-  python3 - "$INSTALLED" "$MKT_NAME" "$PLUG_NAME" "$NEW" "$CACHE_DIR/$NEW" <<'PY'
+  SHA=""
+  [ -d "$MKT_DIR/.git" ] && SHA=$(git -C "$MKT_DIR" rev-parse HEAD)
+  python3 - "$INSTALLED" "$MKT_NAME" "$PLUG_NAME" "$NEW" "$CACHE_DIR/$NEW" "$SHA" <<'PY'
 import json, sys, datetime
-inst, mkt, plug, new, path = sys.argv[1:6]
+inst, mkt, plug, new, path, sha = sys.argv[1:7]
 with open(inst) as f: s = json.load(f)
 key = f"{plug}@{mkt}"
 if key in s.get("plugins", {}):
@@ -134,8 +136,10 @@ if key in s.get("plugins", {}):
         arr[0]["installPath"] = path
         arr[0]["version"] = new
         arr[0]["lastUpdated"] = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.000Z")
+        if sha:
+            arr[0]["gitCommitSha"] = sha
         with open(inst, "w") as f: json.dump(s, f, indent=2)
-        print(f"✓ installed_plugins pin → {new} ({path})")
+        print(f"✓ installed_plugins pin → {new} sha={sha[:8] or 'n/a'} ({path})")
     else:
         print("⚠ installed_plugins entry empty — skip")
 else:

@@ -1,6 +1,6 @@
 ---
 name: memory-curator
-description: Audit & prune memory files at ~/.claude/memory/ + ~/.claude/projects/*/memory/. Detects duplicates (overlapping topics), stale (refs to missing files/functions), oversized INDEX (>200 lines), and orphan (.md tidak ter-link di INDEX). Output prune candidates report. Use when memory tumbuh besar, sebelum re-assessment, atau periodic audit.
+description: Audit & prune memory files at ~/.claude/memory/ + ~/.claude/projects/*/memory/. Detects duplicates, stale refs, oversized INDEX (>200 lines), orphans, and expired (`expires:` frontmatter past today — auto-archive supported). Use when memory tumbuh besar, sebelum re-assessment, atau periodic audit.
 domain: meta
 category: ops
 ---
@@ -55,6 +55,30 @@ Cek `INDEX.md` size:
 
 ```bash
 wc -l ~/.claude/memory/INDEX.md ~/.claude/projects/*/memory/MEMORY.md
+```
+
+### `expiry`
+Scan memory frontmatter for `expires: YYYY-MM-DD`. Report expired + soon-to-expire. Auto-archive expired with `--archive` (moves file to `_archive/<YYYY-MM>/`, prunes INDEX entry).
+
+```bash
+# Report only
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/memory-expiry.py
+# Archive expired + prune INDEX
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/memory-expiry.py --archive
+# Widen warning window (default 7 days)
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/memory-expiry.py --warn-days 30
+```
+
+**When to add `expires:`** — time-bound facts: deadlines, freezes, "remove once X" TODOs, staged rollouts, temp workarounds, scheduled migrations. Skip for durable lessons (feedback rules, user profile).
+
+Frontmatter example:
+```yaml
+---
+name: Mobile release freeze
+description: Non-critical merges blocked through 2026-05-15
+type: project
+expires: 2026-05-15
+---
 ```
 
 ### `prune <file>`
