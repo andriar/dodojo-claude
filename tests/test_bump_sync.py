@@ -20,7 +20,7 @@ def test_bump_updates_all_version_locations(tmp_path):
     subprocess.run(["git", "commit", "-qm", "init"], cwd=fake, check=True)
 
     res = subprocess.run(
-        ["bash", str(fake / "scripts" / "bump.sh"), "9.9.9", "--no-tag"],
+        ["bash", str(fake / "scripts" / "bump.sh"), "9.9.9", "--no-tag", "--no-sync"],
         cwd=fake, capture_output=True, text=True,
     )
     assert res.returncode == 0, res.stderr

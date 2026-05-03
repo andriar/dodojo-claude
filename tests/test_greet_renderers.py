@@ -9,6 +9,7 @@ hyphen so it is not a regular module name).
 from __future__ import annotations
 
 import importlib.util
+import os
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
@@ -16,6 +17,10 @@ GREET = REPO / "hooks" / "dodojo-greet.py"
 
 
 def _greet_module():
+    # Force color OFF so renderers return plain glyphs (test assertions assume this).
+    for k in ("KAGAMI_COLOR", "KAGAMI_THEME", "KAGAMI_ICONS"):
+        os.environ.pop(k, None)
+    os.environ["KAGAMI_COLOR"] = "0"
     spec = importlib.util.spec_from_file_location("greet", GREET)
     m = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(m)
