@@ -106,7 +106,10 @@ read_path() {
 ensure_settings
 
 if [ "$RESET" -eq 1 ]; then
-  reset_env; exit 0
+  reset_env
+  INSTALLER="$(dirname "$0")/dodojo-greeter-install.sh"
+  [ -x "$INSTALLER" ] && "$INSTALLER" uninstall >/dev/null 2>&1 || true
+  exit 0
 fi
 
 if [ "$PRINT_ONLY" -eq 1 ]; then
@@ -136,10 +139,21 @@ COLOR=$(yn "KAGAMI_COLOR — ANSI color codes in greeter?" "1" \
   "Affects: SessionStart banner only. Disable (0) for narrow terminals or terminals without true-color. Code, diffs, prompt UI use Claude Code's own coloring regardless.")
 write_env "KAGAMI_COLOR" "$COLOR"
 
-# 4. Silent
-SILENT=$(yn "KAGAMI_SILENT — skip greeter injection into Claude context?" "0" \
-  "Affects: token cost per session. 0 = greeter rendered to terminal AND injected to Claude (~400 tok/session, useful for Claude to know your XP/Sensei state). 1 = terminal-only, save ~400 tok but Claude won't see it.")
-write_env "KAGAMI_SILENT" "$SILENT"
+# 4. Greeter mode (replaces legacy KAGAMI_SILENT)
+GREETER_MODE=$(pick "DODOJO_GREETER_MODE — when/where the greeter renders" "terminal" \
+  "Affects: token cost + when banner shows. terminal = paint terminal BEFORE Claude launches via shell wrapper (zero Claude tokens, full ANSI colors, recommended). inline = SessionStart hook injects banner into Claude's context (~400 tok/session, monochrome, Claude can reference your state). off = no banner anywhere." \
+  "terminal" "inline" "off")
+write_env "DODOJO_GREETER_MODE" "$GREETER_MODE"
+
+# Install/uninstall the shell wrapper to match chosen mode.
+INSTALLER="$(dirname "$0")/dodojo-greeter-install.sh"
+if [ -x "$INSTALLER" ]; then
+  if [ "$GREETER_MODE" = "terminal" ]; then
+    "$INSTALLER" install || warn "Greeter wrapper install failed — paint banner manually with: python3 $(dirname "$0")/../hooks/dodojo-greet.py"
+  else
+    "$INSTALLER" uninstall >/dev/null 2>&1 || true
+  fi
+fi
 
 # 5. Sensei (opt-in)
 echo

@@ -30,9 +30,11 @@ For every AskUserQuestion call: write a clear `question` text that names the env
    - Question: "KAGAMI_COLOR — render ANSI colors in greeter? Affects only the SessionStart banner. Disable for narrow / low-color terminals; Claude Code's own UI coloring is unaffected either way."
    - Options: `Yes (Recommended)` description "Full color banner (most modern terminals)" | `No` description "Monochrome banner — for tmux without truecolor, dumb terminals, or accessibility"
 
-4. **KAGAMI_SILENT** — header "Silent"
-   - Question: "KAGAMI_SILENT — should the greeter banner be injected into Claude's context, or terminal-only? Affects token cost per session (~400 tok/session if injected). Injecting lets Claude know your XP, Sensei pending recs, alert state."
-   - Options: `Inject (Recommended)` description "Banner shown in terminal AND visible to Claude (Claude can reference your XP/Sensei state)" | `Terminal-only` description "Save ~400 tok/session — Claude won't see your DoDojo state, you do"
+4. **DODOJO_GREETER_MODE** — header "Greeter"
+   - Question: "DODOJO_GREETER_MODE — when and where the greeter renders. Trade-off is token cost vs. Claude awareness. 'terminal' paints the banner in your shell BEFORE Claude launches via a `claude()` wrapper (zero Claude tokens, full ANSI colors, but Claude doesn't see your XP/Sensei state). 'inline' uses the SessionStart hook to inject the banner into Claude's context (~400 tok/session, monochrome since ANSI shows literal, Claude can reference your state). 'off' disables the banner everywhere."
+   - Options: `terminal (Recommended)` description "Pre-launch shell wrapper — zero Claude tokens, full color. Auto-installs to ~/.zshrc / ~/.bashrc / fish config based on $SHELL." | `inline` description "SessionStart hook injection — costs ~400 tok/session but Claude sees your DoDojo state." | `off` description "No banner anywhere."
+
+   After collecting the answer: if `terminal`, run `bash ${CLAUDE_PLUGIN_ROOT}/scripts/dodojo-greeter-install.sh install` so the shell wrapper is added to the user's rc file. If `inline` or `off`, run `bash ${CLAUDE_PLUGIN_ROOT}/scripts/dodojo-greeter-install.sh uninstall` to strip any prior wrapper. The hook itself reads `$DODOJO_GREETER_MODE` and self-gates — no further action needed.
 
 5. **Enable Sensei?** — header "Coach"
    - Question: "Enable Coach (Sensei) — pattern miner that reads your shell history + git log, scores repetitive work by ROI, writes weekly markdown report. State lives at ~/.claude/dodojo/sensei/. Disable if you don't have zsh history or don't want git log mining."
@@ -74,7 +76,7 @@ env.update({
   "KAGAMI_THEME": "...",
   "KAGAMI_ICONS": "...",
   "KAGAMI_COLOR": "...",
-  "KAGAMI_SILENT": "...",
+  "DODOJO_GREETER_MODE": "...",
   "SENSEI_VAULT": "...",
   "SENSEI_REPOS": "...",
   "SENSEI_HISTORY": "...",

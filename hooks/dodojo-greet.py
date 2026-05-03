@@ -686,6 +686,17 @@ def section(title: str, emoji: str = "") -> str:
 
 
 def main() -> int:
+    # Only paint on first session entry. /clear, /resume, /compact also fire
+    # SessionStart — skip those to avoid re-rendering the banner mid-session.
+    if not sys.stdin.isatty():
+        try:
+            payload = json.loads(sys.stdin.read() or "{}")
+        except json.JSONDecodeError:
+            payload = {}
+        src = payload.get("source", "startup")
+        if src != "startup":
+            return 0
+
     now = int(time.time())
     cutoff_7d = now - 7 * 86400
 
@@ -913,12 +924,10 @@ def main() -> int:
     out.append("")
 
     banner = "\n".join(out)
-    try:
-        with open("/dev/tty", "w") as tty:
-            tty.write(banner + "\n")
-            tty.flush()
-    except OSError:
-        print(banner)
+    # Write to stdout: Claude Code captures as SessionStart additionalContext.
+    # /dev/tty write races with TUI banner draw in v2.1.126+ → ghost chars + overlap.
+    sys.stdout.write(banner + "\n")
+    sys.stdout.flush()
     return 0
 
 
