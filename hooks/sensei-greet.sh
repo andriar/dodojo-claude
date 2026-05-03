@@ -83,8 +83,14 @@ if [ -n "$HOME_DIR" ] && [ -f "$HOME_DIR/scripts/outcome.py" ]; then
     stale_count=${stale_count:-0}
 fi
 
-# Skip greeting if nothing actionable
-[ "$pending_count" -eq 0 ] && [ "$draft_count" -eq 0 ] && [ "$stale_count" -eq 0 ] && exit 0
+# All-clear banner if nothing actionable
+if [ "$pending_count" -eq 0 ] && [ "$draft_count" -eq 0 ] && [ "$stale_count" -eq 0 ]; then
+    cat <<EOF
+[sensei-greet] Sensei: all clear ✓ — no pending recs, drafts, or stale acceptances.
+- Latest weekly report: ${latest_report:-(none yet)} (age: ${report_age_days}d)
+EOF
+    exit 0
+fi
 
 cat <<EOF
 [sensei-greet] State summary at session start:

@@ -16,6 +16,7 @@ Short topical fragments — one concern each.
 | Hook | Event | Purpose |
 |------|-------|---------|
 | `dodojo-greet.sh` | SessionStart | Greeter banner + pulse stats |
+| `sensei-greet.sh` | SessionStart | Sensei pending recs + drafts + stale acceptances |
 | `inject-git-context.sh` | UserPromptSubmit | Append branch + dirty status |
 | `smart-context.py` | UserPromptSubmit | Rank memory files vs prompt; inject top matches |
 | `skill-suggest.py` | UserPromptSubmit | Hint relevant custom skills |
@@ -30,15 +31,18 @@ Short topical fragments — one concern each.
 | Command | Purpose |
 |---------|---------|
 | `/dodojo:audit` | Memory + skill audit report |
+| `/dodojo:companions` | Audit companion plugins (caveman, claude-mem, pokemon-buddy) |
 | `/dodojo:health` | Hook smoke-test |
 | `/dodojo:icons` | Switch icon mode |
+| `/dodojo:init` | Interactive setup wizard |
 | `/dodojo:prune` | Archive orphan memories |
+| `/dodojo:sensei` | Run pattern miner + ROI advisor |
 | `/dodojo:status` | Show DoDojo status card |
 | `/dodojo:theme` | Switch greeter theme |
 
 ## Skills (bundled)
 
-`archive-orphans`, `audit-context`, `hook-health`, `memory-curator`, `new-skill`, `pr-describe`, `recall`, `repro-this` — see each `SKILL.md` for trigger phrases.
+`archive-orphans`, `audit-context`, `companions`, `hook-health`, `memory-curator`, `new-skill`, `pr-describe`, `recall`, `repro-this`, `sensei` — see each `SKILL.md` for trigger phrases.
 
 ## Releasing
 

@@ -1,6 +1,6 @@
 ---
 description: Interactive DoDojo setup — pick theme, icons, color, Coach (Sensei) paths. Writes to ~/.claude/settings.json.
-argument-hint: "[--reset | --print]"
+argument-hint: "[--quick | --reset | --print]"
 ---
 
 # /dodojo:init
@@ -9,6 +9,7 @@ You are running the DoDojo setup wizard. Goal: collect 6 user preferences via `A
 
 ## Behavior
 
+If user passed `--quick`: run `bash ${CLAUDE_PLUGIN_ROOT}/scripts/dodojo-init.sh --quick` and exit (writes all defaults silently, runs companions audit).
 If user passed `--print`: run `bash ${CLAUDE_PLUGIN_ROOT}/scripts/dodojo-init.sh --print` and exit.
 If user passed `--reset`: run `bash ${CLAUDE_PLUGIN_ROOT}/scripts/dodojo-init.sh --reset` and exit.
 
