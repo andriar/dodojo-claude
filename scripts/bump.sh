@@ -133,7 +133,7 @@ if key in s.get("plugins", {}):
     if arr:
         arr[0]["installPath"] = path
         arr[0]["version"] = new
-        arr[0]["lastUpdated"] = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.000Z")
+        arr[0]["lastUpdated"] = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.000Z")
         with open(inst, "w") as f: json.dump(s, f, indent=2)
         print(f"✓ installed_plugins pin → {new} ({path})")
     else:
