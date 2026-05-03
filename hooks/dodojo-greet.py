@@ -809,6 +809,24 @@ def main() -> int:
     out.append(f"  {sep_thin}")
     out.append("")
 
+    # Alerts
+    if alerts:
+        if sev["crit"]:
+            sym, color = "🔴", RED
+        elif sev["warn"]:
+            sym, color = "🟡", YELLOW
+        else:
+            sym, color = "🔵", BLUE
+        out.append(f"  {sym}  {color}{BOLD}Alerts{RESET}  {color}{len(alerts)} unread{RESET}  {DIM}c{sev['crit']}/w{sev['warn']}/i{sev['info']}{RESET}")
+        out.append("")
+        for r in alerts[-3:]:
+            sv = r.get("severity", "info").upper()[:4]
+            src = r.get("source", "?")[:20]
+            msg = r.get("message", "")[:50]
+            dot = "●" if sv == "CRIT" else "○" if sv == "WARN" else "·"
+            out.append(f"     {color}{dot}{RESET} [{sv}] {src}: {DIM}{msg}{RESET}")
+        out.append("")
+
     # Pulse
     out.append(f"  {section('Pulse', _icon('pulse'))}  {DIM}last 7 days{RESET}")
     out.append("")
@@ -833,6 +851,23 @@ def main() -> int:
             out.append(f"     {color}{mem_orphans} orphan{RESET}  {DIM}— /archive-orphans after telemetry warms{RESET}")
         out.append("")
 
+    # Sensei
+    if sensei_pending or drafts:
+        out.append(f"  {section('Sensei', _icon('sensei'))}")
+        out.append("")
+        bits = []
+        if sensei_pending:
+            bits.append(f"{BOLD}{sensei_pending}{RESET} pending recs")
+        if drafts:
+            bits.append(f"{BOLD}{len(drafts)}{RESET} draft{'s' if len(drafts) > 1 else ''}")
+        out.append(f"     {' · '.join(bits)}")
+        if sensei_top:
+            rid = sensei_top.get("id", "?")[:28]
+            sug = sensei_top.get("suggestion", "")[:40]
+            score = sensei_top.get("score", 0)
+            out.append(f"     {DIM}▸{RESET} [{score:.1f}] {YELLOW}{rid}{RESET}  {DIM}{sug}{RESET}")
+        out.append("")
+
     # Buddy
     if bd["name"]:
         out.append(f"  {section('Buddy', _icon('buddy'))}")
@@ -852,41 +887,6 @@ def main() -> int:
             bits.append(f"{_icon('rocket')} {bd['ships']}")
         if bits:
             out.append(f"     {DIM}{'  ·  '.join(bits)}{RESET}")
-        out.append("")
-
-    # Alerts
-    if alerts:
-        if sev["crit"]:
-            sym, color = "🔴", RED
-        elif sev["warn"]:
-            sym, color = "🟡", YELLOW
-        else:
-            sym, color = "🔵", BLUE
-        out.append(f"  {sym}  {color}{BOLD}Alerts{RESET}  {color}{len(alerts)} unread{RESET}  {DIM}c{sev['crit']}/w{sev['warn']}/i{sev['info']}{RESET}")
-        out.append("")
-        for r in alerts[-3:]:
-            sv = r.get("severity", "info").upper()[:4]
-            src = r.get("source", "?")[:20]
-            msg = r.get("message", "")[:50]
-            dot = "●" if sv == "CRIT" else "○" if sv == "WARN" else "·"
-            out.append(f"     {color}{dot}{RESET} [{sv}] {src}: {DIM}{msg}{RESET}")
-        out.append("")
-
-    # Sensei
-    if sensei_pending or drafts:
-        out.append(f"  {section('Sensei', _icon('sensei'))}")
-        out.append("")
-        bits = []
-        if sensei_pending:
-            bits.append(f"{BOLD}{sensei_pending}{RESET} pending recs")
-        if drafts:
-            bits.append(f"{BOLD}{len(drafts)}{RESET} draft{'s' if len(drafts) > 1 else ''}")
-        out.append(f"     {' · '.join(bits)}")
-        if sensei_top:
-            rid = sensei_top.get("id", "?")[:28]
-            sug = sensei_top.get("suggestion", "")[:40]
-            score = sensei_top.get("score", 0)
-            out.append(f"     {DIM}▸{RESET} [{score:.1f}] {YELLOW}{rid}{RESET}  {DIM}{sug}{RESET}")
         out.append("")
 
     # XP
