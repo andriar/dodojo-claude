@@ -40,17 +40,23 @@ detect_shell_rc() {
 }
 
 shell_block_posix() {
-  cat <<EOF
-$SENTINEL_BEGIN
+  cat <<'EOF'
+# >>> DODOJO_GREETER_BEGIN >>>
 # Paint DoDojo greeter in terminal before Claude Code launches.
 # Managed by dodojo-greeter-install.sh — edit between sentinels at your own risk.
+# Version-agnostic: resolves latest installed dodojo cache at call time so
+# version bumps do not require re-running the installer.
 claude() {
-  if [ -t 1 ] && [ -x "\$(command -v python3)" ]; then
-    KAGAMI_COLOR="\${KAGAMI_COLOR:-1}" python3 "$GREETER_PY" 2>/dev/null || true
+  if [ -t 1 ] && [ -x "$(command -v python3)" ]; then
+    local _dodojo_py
+    _dodojo_py=$(find "$HOME/.claude/plugins/cache/dodojo/dodojo" -mindepth 3 -maxdepth 3 -type f -name dodojo-greet.py 2>/dev/null | sort -V | tail -1)
+    if [ -n "$_dodojo_py" ] && [ -f "$_dodojo_py" ]; then
+      KAGAMI_COLOR="${KAGAMI_COLOR:-1}" python3 "$_dodojo_py" 2>/dev/null || true
+    fi
   fi
-  command claude "\$@"
+  command claude "$@"
 }
-$SENTINEL_END
+# <<< DODOJO_GREETER_END <<<
 EOF
 }
 
@@ -92,8 +98,15 @@ case "$cmd" in
     mkdir -p "$(dirname "$RC")"
     [ -f "$RC" ] || : > "$RC"
     if grep -qF "$SENTINEL_BEGIN" "$RC"; then
-      echo "Already installed in $RC (no change)"
-      exit 0
+      # Refresh existing block — strip then re-append so old version-pinned
+      # paths get replaced with the current (version-agnostic) wrapper.
+      tmp="$(mktemp)"
+      awk -v b="$SENTINEL_BEGIN" -v e="$SENTINEL_END" '
+        $0 == b {skip=1; next}
+        $0 == e {skip=0; next}
+        !skip {print}
+      ' "$RC" > "$tmp"
+      mv "$tmp" "$RC"
     fi
     if [[ "$RC" == *config/fish/config.fish ]]; then
       shell_block_fish >> "$RC"
