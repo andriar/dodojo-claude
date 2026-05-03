@@ -55,6 +55,7 @@ def _greet_env(tmp: Path) -> dict:
     env = os.environ.copy()
     env["DODOJO_DATA"] = str(data)
     env["KAGAMI_COLOR"] = "1"
+    env["DODOJO_GREETER_MODE"] = "inline"
     return env
 
 
@@ -93,8 +94,10 @@ def test_sh_passthrough_single_print(tmp_path):
 
 
 def test_sh_matches_py_output(tmp_path):
-    # .sh exec passthrough: stdout must equal python's stdout byte-for-byte.
+    # .sh wrapper forces KAGAMI_COLOR=0 (inline → Claude context, ANSI shows literal).
+    # Compare against py invoked with the same color env.
     env = _greet_env(tmp_path)
-    py = _run([sys.executable, str(HOOKS / "dodojo-greet.py")], env=env)
+    py_env = {**env, "KAGAMI_COLOR": "0"}
+    py = _run([sys.executable, str(HOOKS / "dodojo-greet.py")], env=py_env)
     sh = _run([str(HOOKS / "dodojo-greet.sh")], env=env)
     assert py.stdout == sh.stdout, "sh wrapper diverged from python output — should be exec passthrough"
