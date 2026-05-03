@@ -2,3 +2,8 @@
 __pycache__/
 *.pyc
 .pytest_cache/
+skills/sensei/state/raw.tsv
+skills/sensei/state/last_scored.json
+skills/sensei/state/feedback.jsonl
+skills/sensei/state/outcomes.jsonl
+skills/sensei/state/patterns_seen.json

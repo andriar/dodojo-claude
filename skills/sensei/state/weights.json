@@ -1,0 +1,12 @@
+{
+  "freq": 0.8782,
+  "time_per_run_sec": 0.421,
+  "recency_days": 0.2958,
+  "effort_to_automate_hours": -1.502,
+  "domain_match_bonus": 0.5,
+  "_meta": {
+    "last_updated": "2026-05-02",
+    "version": 1,
+    "notes": "L1 tuning adjusts these via gradient nudge from feedback.jsonl"
+  }
+}

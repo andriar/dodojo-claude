@@ -22,8 +22,9 @@ DODOJO_DATA = Path(os.environ.get("DODOJO_DATA") or str(HOME / ".claude"))
 
 ALERTS = DODOJO_DATA / "alerts.jsonl"
 XP_QUEUE = DODOJO_DATA / "buddy-xp-pending.jsonl"
-SENSEI_LAST = DODOJO_DATA / "skills" / "sensei" / "state" / "last_scored.json"
-SENSEI_FB = DODOJO_DATA / "skills" / "sensei" / "state" / "feedback.jsonl"
+SENSEI_STATE = Path(os.environ.get("SENSEI_STATE") or DODOJO_DATA / "dodojo" / "sensei")
+SENSEI_LAST = SENSEI_STATE / "last_scored.json"
+SENSEI_FB = SENSEI_STATE / "feedback.jsonl"
 DRAFTS = DODOJO_DATA / "skills" / "_drafts"
 SC_LOG = DODOJO_DATA / "hooks" / "smart-context.log"
 SESSIONS = DODOJO_DATA / "sessions"

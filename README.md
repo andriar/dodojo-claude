@@ -9,7 +9,7 @@ Quiet tools for AI-assisted dev. Memory, pattern coach, smart context, and audit
 | Layer | Role | What it does |
 |-------|------|--------------|
 | **Mirror** (Kagami) | memory | Captures preferences, lessons, decisions across sessions — no more re-explaining |
-| **Coach** (Sensei) | pattern coach | Surfaces habits worth automating |
+| **Coach** (Sensei) | pattern coach | Mines work patterns → ranks by ROI → recommends automations weekly *(opt-in, requires env setup — see below)* |
 | **Context** | smart retrieval | Injects only the memories relevant to your current prompt |
 | **Audit** | prune | Archives unused memories/skills so your stack stays lean |
 | **Meter** | observability | Token-saved counter on every session start |
@@ -43,6 +43,36 @@ Optional environment variables:
 | `KAGAMI_ICONS` | `nerd` | `nerd` / `unicode` / `emoji` |
 | `KAGAMI_COLOR` | `0` | Set to `1` to enable ANSI colors in greeter |
 | `KAGAMI_SILENT` | `0` | Set to `1` to skip injecting greeter into Claude's context (~400 tokens/session). Greeter still renders to terminal. |
+
+## Coach (Sensei) — opt-in
+
+Sensei mines work patterns from shell history + git log → ranks by ROI → writes weekly markdown report. Disabled by default until you set env vars.
+
+Add to `~/.claude/settings.json` under `env`:
+
+```json
+{
+  "env": {
+    "SENSEI_VAULT": "/home/you/Documents/Obsidian Vault/Sensei",
+    "SENSEI_HISTORY": "/home/you/.zsh_history",
+    "SENSEI_REPOS": "/home/you/Development:/home/you/work"
+  }
+}
+```
+
+Or export in your shell rc. Defaults assume zsh + Obsidian at standard paths. State (weights, feedback, raw events) lives at `~/.claude/dodojo/sensei/` — user-local, never in plugin cache.
+
+Trigger weekly report:
+```bash
+python3 ~/.claude/plugins/cache/dodojo/dodojo/<version>/skills/sensei/scripts/report.py
+```
+
+Or invoke `/sensei` in Claude. Optional cron via `crontab -e`:
+```cron
+0 9 * * 1  python3 ~/.claude/plugins/cache/dodojo/dodojo/0.3.8/skills/sensei/scripts/report.py
+```
+
+Optional integration with **claude-mem** plugin for session timeline mining (auto-skipped if absent).
 
 ## Companions (not bundled)
 
