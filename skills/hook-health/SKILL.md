@@ -36,6 +36,8 @@ For every hook in `settings.json`:
 4. **Stale check**: warns if file unmodified > 90 days
 5. **Stderr noise**: warns if exit 0 but wrote to stderr
 
+Plus: **orphan detection** — scans `~/.claude/hooks/*.sh` and warns about files NOT registered in `settings.json`. Skipped when header `# EVENT:` marks file as `systemd-timer`, `cron`, or `n/a` (non-Claude hooks).
+
 ## Output
 
 ```
@@ -44,6 +46,9 @@ Hook health check (N registered)
   ✓ [Event           ] hook-name.sh        clean exit 0
   ⚠ [Event           ] old-hook.sh         stale (95d > 90d)
   ✗ [Event           ] broken.sh           exit 1 — stderr: ...
+
+Orphan hooks (N unregistered in settings.json):
+  ⚠ unregistered-hook.sh           EVENT: PreToolUse
 
 Summary: X OK, Y WARN, Z FAIL
 ```
