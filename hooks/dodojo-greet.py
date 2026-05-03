@@ -890,7 +890,13 @@ def main() -> int:
     out.append(f"  {DIM}{_icon('spark')}  tip{RESET}  {tip}")
     out.append("")
 
-    print("\n".join(out))
+    banner = "\n".join(out)
+    try:
+        with open("/dev/tty", "w") as tty:
+            tty.write(banner + "\n")
+            tty.flush()
+    except OSError:
+        print(banner)
     return 0
 
 
