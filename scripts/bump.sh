@@ -143,5 +143,17 @@ else:
 PY
 fi
 
+# 4. Verify cache survived sync (catches silent rebuild failure)
+if [ -f "$INSTALLED" ]; then
+  PINNED=$(python3 -c "import json; s=json.load(open('$INSTALLED')); a=s['plugins'].get('$PLUG_NAME@$MKT_NAME',[]); print(a[0]['installPath'] if a else '')")
+  if [ -n "$PINNED" ] && [ ! -d "$PINNED" ]; then
+    echo "✗ POST-SYNC FAIL: pinned cache dir missing → $PINNED"
+    echo "  Stop hook + skills will error every session. Re-run sync or rebuild manually:"
+    echo "    git clone --quiet '$MKT_DIR' '$PINNED'"
+    exit 1
+  fi
+  echo "✓ cache verified: $PINNED"
+fi
+
 echo
 echo "Plugin synced. Reload in Claude Code: /reload-plugins"
