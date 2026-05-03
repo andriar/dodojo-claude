@@ -4,6 +4,8 @@ All notable changes documented here. Format follows [Keep a Changelog](https://k
 
 ## [Unreleased]
 
+## [0.3.24] - 2026-05-03
+
 ### Added
 - `CHANGELOG.md` — release history file
 - `scripts/bump.sh` auto-promotes `[Unreleased]` → `[NEW] - YYYY-MM-DD` and stages the file
