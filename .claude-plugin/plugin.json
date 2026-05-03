@@ -1,7 +1,7 @@
 {
   "name": "dodojo",
   "description": "Quiet tools for AI-assisted dev. Memory, pattern coach, smart context, and audit \u2014 keeps your Claude Code workflow lean.",
-  "version": "0.3.22",
+  "version": "0.3.23",
   "author": {
     "name": "Andri",
     "url": "https://github.com/andriar"

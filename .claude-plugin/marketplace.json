@@ -8,7 +8,7 @@
   },
   "metadata": {
     "description": "Quiet tools for AI-assisted dev \u2014 memory, coach, smart context, audit.",
-    "version": "0.3.22"
+    "version": "0.3.23"
   },
   "plugins": [
     {
@@ -18,7 +18,7 @@
         "source": "url",
         "url": "https://github.com/andriar/dodojo-claude.git"
       },
-      "version": "0.3.22",
+      "version": "0.3.23",
       "category": "productivity"
     }
   ]
