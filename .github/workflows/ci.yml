@@ -18,8 +18,11 @@ jobs:
           python-version: ${{ matrix.python }}
       - name: Install pytest
         run: pip install pytest
-      - name: py_compile every hook
-        run: python -m py_compile hooks/*.py
+      - name: py_compile all python sources
+        run: |
+          python -m py_compile hooks/*.py
+          python -m py_compile scripts/*.py
+          find skills -name '*.py' -print0 | xargs -0 -r python -m py_compile
       - name: pytest
         run: pytest tests/ -q
 
@@ -30,4 +33,28 @@ jobs:
       - name: Run shellcheck
         run: |
           sudo apt-get update -qq && sudo apt-get install -yqq shellcheck
-          shellcheck hooks/*.sh
+          shellcheck hooks/*.sh scripts/*.sh
+          find skills -name '*.sh' -print0 | xargs -0 -r shellcheck
+
+  version-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify plugin.json and marketplace.json versions match
+        run: |
+          PLUGIN_VER=$(python3 -c "import json; print(json.load(open('.claude-plugin/plugin.json'))['version'])")
+          MKT_META=$(python3 -c "import json; print(json.load(open('.claude-plugin/marketplace.json'))['metadata']['version'])")
+          MKT_PLUGIN=$(python3 -c "import json; m=json.load(open('.claude-plugin/marketplace.json')); print(m['plugins'][0]['version'])")
+          echo "plugin.json=$PLUGIN_VER  marketplace.meta=$MKT_META  marketplace.plugins[0]=$MKT_PLUGIN"
+          test "$PLUGIN_VER" = "$MKT_META" || { echo "::error::plugin.json vs marketplace.json metadata version mismatch"; exit 1; }
+          test "$PLUGIN_VER" = "$MKT_PLUGIN" || { echo "::error::plugin.json vs marketplace.plugins[0].version mismatch"; exit 1; }
+
+  json-valid:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate JSON manifests parse
+        run: |
+          python3 -c "import json; json.load(open('hooks.json'))"
+          python3 -c "import json; json.load(open('.claude-plugin/plugin.json'))"
+          python3 -c "import json; json.load(open('.claude-plugin/marketplace.json'))"

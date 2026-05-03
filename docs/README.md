@@ -60,4 +60,4 @@ uv venv .venv && uv pip install --python .venv pytest
 .venv/bin/python -m pytest tests/ -q
 ```
 
-CI: `.github/workflows/ci.yml` runs pytest on Python 3.10/3.12 + shellcheck on every `.sh`.
+CI: `.github/workflows/ci.yml` runs pytest + py_compile on Python 3.10/3.12, shellcheck on every `.sh` (hooks/scripts/skills), version-sync between plugin.json and marketplace.json, and JSON schema validity for all manifests.
