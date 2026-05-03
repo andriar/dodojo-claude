@@ -114,7 +114,7 @@ fi
 # 2. Rebuild cache dir at new version
 if [ -d "$(dirname "$CACHE_DIR")" ] || [ -d "$MKT_DIR" ]; then
   mkdir -p "$CACHE_DIR"
-  rm -rf "$CACHE_DIR/$NEW"
+  rm -rf "${CACHE_DIR:?}/${NEW:?}"
   SRC="${MKT_DIR:-$REPO}"
   [ -d "$MKT_DIR" ] || SRC="$REPO"
   git clone --quiet "$SRC" "$CACHE_DIR/$NEW"

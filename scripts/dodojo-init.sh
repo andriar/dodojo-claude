@@ -167,7 +167,8 @@ apply_defaults() {
   write_env "SENSEI_REPOS" "$HOME/Development"
   write_env "SENSEI_HISTORY" "$HOME/.zsh_history"
   mkdir -p "$HOME/Documents/Obsidian Vault/Sensei"
-  local installer="$(dirname "$0")/dodojo-greeter-install.sh"
+  local installer
+  installer="$(dirname "$0")/dodojo-greeter-install.sh"
   [ -x "$installer" ] && "$installer" install >/dev/null 2>&1 || true
 }
 
