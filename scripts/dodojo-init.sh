@@ -61,12 +61,13 @@ for k in keys: print(f"{k}={env[k]}")
 PY
 }
 
-# Interactive picker: $1=label, $2=default, rest=options
+# Interactive picker: $1=label, $2=default, $3=help, rest=options
 pick() {
-  local label="$1"; local default="$2"; shift 2
+  local label="$1"; local default="$2"; local help="$3"; shift 3
   local options=("$@")
   echo
   cyan "▸ $label"
+  dim  "  $help"
   PS3="  Choose [default=$default]: "
   select opt in "${options[@]}" "(custom)" "(skip / keep default)"; do
     case "$opt" in
@@ -78,11 +79,14 @@ pick() {
   done
 }
 
-# Yes/no prompt
+# Yes/no prompt with help text
 yn() {
-  local label="$1"; local default="$2"  # default = 0 or 1
+  local label="$1"; local default="$2"; local help="$3"
   local prompt="[Y/n]"; [ "$default" = "0" ] && prompt="[y/N]"
-  read -rp "▸ $label $prompt " ans
+  echo
+  cyan "▸ $label"
+  dim  "  $help"
+  read -rp "  $prompt " ans
   case "${ans:-x}" in
     [Yy]*) echo 1 ;;
     [Nn]*) echo 0 ;;
@@ -91,8 +95,11 @@ yn() {
 }
 
 read_path() {
-  local label="$1"; local default="$2"
-  read -rp "▸ $label [$default]: " val
+  local label="$1"; local default="$2"; local help="$3"
+  echo
+  cyan "▸ $label"
+  dim  "  $help"
+  read -rp "  [$default]: " val
   echo "${val:-$default}"
 }
 
@@ -110,7 +117,8 @@ cyan "DoDojo setup — writes to $SETTINGS"
 dim "Press Enter at any prompt to keep default. Ctrl-C to abort."
 
 # 1. Theme
-THEME=$(pick "Greeter theme (banner colors)" "default" \
+THEME=$(pick "KAGAMI_THEME — greeter banner color palette" "default" \
+  "Affects: SessionStart banner colors only (divider, accent, success/warn/crit). Code/tool output unaffected. 20 themes total — popular ones first, type any other name via (custom)." \
   "default" "dracula" "catppuccin" "nord" "gruvbox" "monokai" \
   "pastel" "sakura" "kawaii" "frieren" \
   "neon" "retro" "mono" \
@@ -118,37 +126,51 @@ THEME=$(pick "Greeter theme (banner colors)" "default" \
 [ -n "$THEME" ] && write_env "KAGAMI_THEME" "$THEME"
 
 # 2. Icons
-ICONS=$(pick "Icon set" "nerd" "nerd" "unicode" "emoji")
+ICONS=$(pick "KAGAMI_ICONS — icon set used in greeter sections" "nerd" \
+  "Affects: SessionStart banner icons only (memory/sensei/xp/alerts markers). nerd = Nerd Font glyphs (best look, needs patched font). unicode = box-drawing fallback. emoji = full-width emoji (wide terminals)." \
+  "nerd" "unicode" "emoji")
 [ -n "$ICONS" ] && write_env "KAGAMI_ICONS" "$ICONS"
 
 # 3. Color
-COLOR=$(yn "ANSI colors in greeter?" "1")
+COLOR=$(yn "KAGAMI_COLOR — ANSI color codes in greeter?" "1" \
+  "Affects: SessionStart banner only. Disable (0) for narrow terminals or terminals without true-color. Code, diffs, prompt UI use Claude Code's own coloring regardless.")
 write_env "KAGAMI_COLOR" "$COLOR"
 
-# 4. Silent (skip injecting greeter into Claude context)
-SILENT=$(yn "Silent mode? (greeter shows in terminal but NOT injected to Claude — saves ~400 tok/session)" "0")
+# 4. Silent
+SILENT=$(yn "KAGAMI_SILENT — skip greeter injection into Claude context?" "0" \
+  "Affects: token cost per session. 0 = greeter rendered to terminal AND injected to Claude (~400 tok/session, useful for Claude to know your XP/Sensei state). 1 = terminal-only, save ~400 tok but Claude won't see it.")
 write_env "KAGAMI_SILENT" "$SILENT"
 
 # 5. Sensei (opt-in)
 echo
-cyan "▸ Coach (Sensei) — pattern miner + ROI advisor"
-ENABLE_SENSEI=$(yn "Enable Sensei?" "1")
+cyan "═══ Coach (Sensei) — pattern miner + ROI advisor ═══"
+dim  "Sensei reads your shell history + git log to detect repetitive work, scores by ROI,"
+dim  "writes weekly markdown report. Disabled if you skip env setup. State (weights, decisions)"
+dim  "lives at ~/.claude/dodojo/sensei/ — never in plugin cache."
+ENABLE_SENSEI=$(yn "Enable Sensei?" "1" "If no, the /sensei command stays available but reports nothing useful until env vars set later.")
 if [ "$ENABLE_SENSEI" = "1" ]; then
-  VAULT=$(read_path "Vault dir for weekly markdown report" "$HOME/Documents/Obsidian Vault/Sensei")
+  VAULT=$(read_path "SENSEI_VAULT — output dir for weekly markdown" "$HOME/Documents/Obsidian Vault/Sensei" \
+    "Affects: where weekly-YYYY-MM-DD.md files land. Use Obsidian vault path for auto-indexed notes, OR any plain folder if you don't use Obsidian.")
   write_env "SENSEI_VAULT" "$VAULT"
   mkdir -p "$VAULT" && dim "  created $VAULT"
 
-  REPOS=$(read_path "Repo roots to scan (colon-separated for multiple)" "$HOME/Development")
+  REPOS=$(read_path "SENSEI_REPOS — repo roots to scan with git log" "$HOME/Development" \
+    "Affects: which git repos feed commit-pattern + repo-focus + PR-gap detectors. Multiple roots = colon-separated (e.g. ~/Development:/warehouse/server/compose). Sensei walks maxdepth 4 to find .git dirs.")
   write_env "SENSEI_REPOS" "$REPOS"
 
-  HISTORY=$(read_path "Shell history file" "$HOME/.zsh_history")
-  [ -f "$HISTORY" ] || warn "  Warning: $HISTORY does not exist (Sensei skips zsh detector)"
+  HISTORY=$(read_path "SENSEI_HISTORY — shell history file for command-frequency mining" "$HOME/.zsh_history" \
+    "Affects: which file feeds the zsh-command detector. Point to ~/.bash_history if you use bash. Missing file = zsh detector silently skipped.")
+  [ -f "$HISTORY" ] || warn "  Warning: $HISTORY does not exist (Sensei skips shell-cmd detector until you set this)"
   write_env "SENSEI_HISTORY" "$HISTORY"
 fi
 
 # 6. DODOJO_DATA (rarely changed)
 echo
-read -rp "▸ Override DODOJO_DATA? (default ~/.claude — leave blank to skip) " DD
+cyan "▸ DODOJO_DATA — root for memory/sessions/alerts/xp data"
+dim  "  Affects: where greeter + hooks read/write state (memory dir, sessions JSONL, alerts.jsonl,"
+dim  "  buddy-xp queue). Default = ~/.claude (shared with Claude Code). Override only if you want"
+dim  "  DoDojo state isolated to a different dir (e.g. portable install on USB)."
+read -rp "  Override path? (leave blank to keep ~/.claude default): " DD
 [ -n "$DD" ] && write_env "DODOJO_DATA" "$DD"
 
 echo
