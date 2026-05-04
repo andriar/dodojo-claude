@@ -22,7 +22,7 @@ Six core layers shipped. Last gaps:
 - [x] **Meter** — token-saved counter
 - [ ] Sensei default-on (currently opt-in; needs vault auto-detect proven across 10+ users — done in v0.3.25)
 
-## M2 — Shareable v1.0 (~40% done)
+## M2 — Shareable v1.0 (~78% done)
 
 Indie dev should install + understand in 5 min.
 
@@ -31,8 +31,10 @@ Indie dev should install + understand in 5 min.
 - [x] `/dodojo:init` wizard with sensible defaults
 - [x] `docs/positioning.md` — vs caveman, vs claude-mem
 - [x] `docs/sensei.md` — opt-in rationale + setup + roadmap
-- [ ] `docs/quickstart.md` — install → first ROI rec in 5 min
-- [ ] Demo screencast / asciinema
+- [x] `docs/quickstart.md` — install → first ROI rec in 5 min
+- [x] Demo screencast / asciinema (docs/demo.cast + docs/demo.md)
+- [x] Honest metrics (removed false token savings claim, added reuse tracking)
+- [x] Context optimization (cap injection to top 2, save 60% tokens)
 - [ ] At least 3 external users dogfooding
 - [ ] Issue templates + contribution guide
 
@@ -49,13 +51,15 @@ Beyond single-author. Optional.
 
 ---
 
-## Status snapshot (2026-05-03)
+## Status snapshot (2026-05-04)
 
 | Milestone | Done | Total | % |
 |-----------|------|-------|---|
 | M1 — Feature complete | 6 | 7 | **86%** |
-| M2 — Shareable v1.0 | 5 | 9 | **56%** |
+| M2 — Shareable v1.0 | 9 | 11 | **82%** |
 | M3 — Mature ecosystem | 0 | 6 | **0%** |
-| **Overall to v1.0 (M1+M2)** | 11 | 16 | **69%** |
+| **Overall to v1.0 (M1+M2)** | 15 | 18 | **83%** |
+
+**M2 ready to ship.** Remaining: 3 external users + contrib guide (can happen post-launch).
 
 Updated when items toggle. Maintain alongside CHANGELOG.
