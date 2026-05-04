@@ -29,6 +29,46 @@ from pathlib import Path
 HOME = Path.home()
 DODOJO_DATA = Path(os.environ.get("DODOJO_DATA") or str(HOME / ".claude"))
 
+# Import categorizer for metadata updates
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "lib"))
+try:
+    from memory_categorizer import update_memory_metadata
+    CATEGORIZER_AVAILABLE = True
+except ImportError:
+    CATEGORIZER_AVAILABLE = False
+
+
+def update_memory_usage(memory_files: list[str]) -> None:
+    """Update reuse count + last_used timestamp for injected memories."""
+    if not CATEGORIZER_AVAILABLE or not memory_files:
+        return
+
+    now = time.strftime("%Y-%m-%d")
+    for mem_file in memory_files:
+        # Expand ~ to home
+        if mem_file.startswith("~"):
+            mem_path = Path(mem_file.replace("~", str(HOME)))
+        else:
+            mem_path = Path(mem_file)
+
+        if not mem_path.is_file():
+            continue
+
+        try:
+            # Increment reuses, update last_used
+            from memory_categorizer import parse_frontmatter
+            content = mem_path.read_text(encoding="utf-8")
+            fm, body = parse_frontmatter(content)
+
+            reuses = int(fm.get("reuses", "0"))
+            fm["reuses"] = str(reuses + 1)
+            fm["last_used"] = now
+
+            update_memory_metadata(mem_path, fm)
+        except (OSError, ValueError, AttributeError):
+            # Silently skip errors (not critical)
+            pass
+
 
 def _resolve_buddy_dir() -> Path:
     """Discover where pokemon-buddy plugin stores state.
@@ -184,6 +224,9 @@ def main() -> int:
             f.write(json.dumps(record) + "\n")
     except OSError:
         pass
+
+    # Phase 5b: Auto-update memory metadata (reuse count + last_used)
+    update_memory_usage(record.get("memories_injected", []))
 
     # Bridge to Pokémon buddy XP system: queue an XP grant if turn is "meaningful"
     # (>= 5 tool invocations AND touched at least one file). Pokemon Coach skill /
