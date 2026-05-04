@@ -1,19 +1,106 @@
-# DoDojo docs
+# DoDojo Documentation
 
-Short topical fragments — one concern each.
+Complete guides + reference. Pick your entry point below.
+
+---
+
+## 🚀 Start Here
+
+**New to DoDojo?** Pick one:
+
+| If you want to... | Read |
+|---|---|
+| Understand the philosophy | [mental-model.md](guides/mental-model.md) — Why DoDojo exists, 4 core ideas (Mirror/Coach/Context/Audit) |
+| Install + get ROI in 5 min | [quickstart.md](quickstart.md) — Setup wizard + first memory |
+| See it in action | [demo.md](demo.md) — 60-second asciinema (greeter → Sensei mining) |
+| Know what each feature does | [FEATURES.md](FEATURES.md) — Complete reference (memory, Sensei, tips, orphan detection, smart context, categorized memory, auto-archival) |
+
+---
+
+## 📚 Feature Guides
+
+| Feature | When to use | Details |
+|---------|---|---|
+| **Mirror (Memory)** | Capture lessons that stick across sessions | [FEATURES.md: Mirror](FEATURES.md#mirror-memory) — how-to, metadata, when to create |
+| **Sensei Phase 2** | Detect friction patterns in your workflow | [FEATURES.md: Sensei](FEATURES.md#sensei-phase-2-workflow-optimization) — patterns detected, adoption tracking |
+| **Smart Tips (Q3)** | Daily actionable tip tailored to what you're doing | [FEATURES.md: Smart Tips](FEATURES.md#smart-tips-q3) — context-aware, feedback-weighted, Sensei-driven |
+| **Orphan Detection (Q4)** | Find stale memories, cleanup safely | [FEATURES.md: Orphan Detection](FEATURES.md#orphan-detection-q4) — scoring algorithm, reversible archival |
+| **Smart Context (Phase 5)** | Auto-inject relevant memories into prompts | [FEATURES.md: Smart Context](FEATURES.md#smart-context-phase-5) — categorized search, ranking signals |
+| **Categorized Memory (Phase 5c)** | Organize knowledge by domain | [FEATURES.md: Categorized Memory](FEATURES.md#categorized-memory-phase-5c) — directory structure, metadata |
+| **Auto-Archival (Phase 4)** | Automatically move unused memories to archive | [FEATURES.md: Auto-Archival](FEATURES.md#auto-archival-phase-4) — reversible, high-confidence only |
+
+---
+
+## 🏗️ Architecture & Design
 
 | Topic | What it covers |
-|-------|----------------|
-| [quickstart.md](quickstart.md) | Install → ROI in 5 minutes. First-time user journey |
-| [demo.md](demo.md) | 60-second asciinema. Watch greeter → Sensei pattern mining in action |
-| [positioning.md](positioning.md) | DoDojo vs caveman vs claude-mem — what each layer does |
-| [sensei.md](sensei.md) | Sensei opt-in rationale, setup cascade, privacy modes |
-| [audit.md](audit.md) | Memory audit + orphan detection |
-| [health.md](health.md) | Hook health smoke-test |
+|---|---|
+| [phases.md](architecture/phases.md) | Complete evolution (Phase 1→5, M0→M2+) with version mapping, milestone summary, M3+ roadmap |
+| [positioning.md](positioning.md) | DoDojo vs caveman vs claude-mem — layering + integration |
+| [sensei.md](sensei.md) | Sensei opt-in setup, privacy modes, data lifecycle |
+
+---
+
+## 🔧 Troubleshooting
+
+| Problem | Solution |
+|---|---|
+| Plugin won't install | [TROUBLESHOOTING.md: Installation](TROUBLESHOOTING.md#plugin-wont-install) |
+| Memory files not loading | [TROUBLESHOOTING.md: Memory](TROUBLESHOOTING.md#memory-files-not-loading) |
+| Sensei not showing recommendations | [TROUBLESHOOTING.md: Sensei](TROUBLESHOOTING.md#sensei-not-showing-recommendations) |
+| Tips not showing in greeter | [TROUBLESHOOTING.md: Smart Tips](TROUBLESHOOTING.md#tips-not-showing-in-greeter) |
+| Won't archive memories | [TROUBLESHOOTING.md: Orphan Detection](TROUBLESHOOTING.md#wont-archive-memories) |
+| Claude Code slow on startup | [TROUBLESHOOTING.md: Performance](TROUBLESHOOTING.md#claude-code-slow-on-startup) |
+| All issues | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) — complete guide |
+
+---
+
+## 📖 Command Reference
+
+| Command | Purpose |
+|---------|---------|
+| `/dodojo:init` | Interactive setup wizard |
+| `/dodojo:status` | Show DoDojo status card |
+| `/dodojo:health` | Hook smoke-test |
+| `/dodojo:recall "pattern"` | Search memories |
+| `/dodojo:sensei` | Run Sensei pattern mining + report |
+
+---
+
+## 🪝 Hooks (plugin-managed, registered in settings.json)
+
+| Hook | Event | Purpose |
+|------|-------|---------|
+| `dodojo-greet.sh` | SessionStart | Greeter banner + pulse stats |
+| `sensei-greeter.sh` | SessionStart | Sensei pending recs + adoption |
+| `tips-display.sh` | SessionStart | Daily smart tip + rating |
+| `smart-context.py` | UserPromptSubmit | Inject relevant memories (top 2) |
+| `model-route.sh` | UserPromptSubmit | Classify prompt → suggest model + effort |
+| `sensei-telemetry.sh` | Stop | Capture session data (prompts, tokens, tools) |
+
+---
+
+## 🎨 Configuration & Customization
+
+| Topic | What it covers |
+|---|---|
 | [icons.md](icons.md) | `KAGAMI_ICONS` modes (nerd / unicode / emoji) |
-| [prune.md](prune.md) | Pruning rules + lifecycle |
-| [status.md](status.md) | Greeter pulse stats explanation |
 | [theme.md](theme.md) | Greeter themes + `KAGAMI_THEME` |
+| [health.md](health.md) | Hook health smoke-test |
+| [status.md](status.md) | Greeter pulse stats explanation |
+
+---
+
+## 📦 Organizing Memories
+
+| Topic | What it covers |
+|---|---|
+| [audit.md](audit.md) | Memory audit + orphan scoring |
+| [prune.md](prune.md) | Pruning rules + lifecycle |
+
+---
+
+## 🛣️ Roadmap & Direction
 
 Project goal tracking → [ROADMAP.md](../ROADMAP.md).
 
