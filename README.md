@@ -6,7 +6,7 @@ Quiet tools for AI-assisted dev. Memory, pattern coach, smart context, and audit
 
 ![DoDojo greeter — pulse, memory health, route, buddy, XP, quick actions](docs/assets/image-1.png)
 
-**[→ Watch 60-second demo](docs/demo.md)** · New? Start with [quickstart](docs/quickstart.md).
+**[→ Watch 60-second demo](docs/demo.md)** · **[→ Understand DoDojo](docs/guides/mental-model.md)** · New? Start with [quickstart](docs/quickstart.md).
 
 ## What it does
 
