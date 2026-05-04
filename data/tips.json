@@ -1,0 +1,205 @@
+{
+  "version": "1.0",
+  "tips": [
+    {
+      "id": "tip_review_001",
+      "text": "Use /simplify for terse code reviews. Saves tokens + time.",
+      "link": "/simplify",
+      "category": "code-review",
+      "keywords": ["review", "code", "simplify", "check"],
+      "helpfulness": 0.5
+    },
+    {
+      "id": "tip_review_002",
+      "text": "/caveman:caveman-review compresses review feedback. Try it.",
+      "link": "/caveman:caveman-review",
+      "category": "code-review",
+      "keywords": ["review", "compress", "feedback"],
+      "helpfulness": 0.5
+    },
+    {
+      "id": "tip_review_003",
+      "text": "Use /dodojo:pr-describe to auto-draft PR descriptions.",
+      "link": "/dodojo:pr-describe",
+      "category": "code-review",
+      "keywords": ["pr", "description", "draft"],
+      "helpfulness": 0.5
+    },
+    {
+      "id": "tip_search_001",
+      "text": "/smart-explore indexes codebase. Faster than grep for structure.",
+      "link": "/claude-mem:smart-explore",
+      "category": "search",
+      "keywords": ["search", "explore", "find", "codebase"],
+      "helpfulness": 0.5
+    },
+    {
+      "id": "tip_search_002",
+      "text": "Use grep for text search (cheaper than Read tool).",
+      "link": "bash grep",
+      "category": "search",
+      "keywords": ["search", "grep", "find", "text"],
+      "helpfulness": 0.5
+    },
+    {
+      "id": "tip_search_003",
+      "text": "/dodojo:recall searches your memory files fast.",
+      "link": "/dodojo:recall",
+      "category": "search",
+      "keywords": ["memory", "recall", "search", "reuse"],
+      "helpfulness": 0.5
+    },
+    {
+      "id": "tip_search_004",
+      "text": "Use -i flag: grep -i PATTERN finds case-insensitive matches.",
+      "link": "bash grep",
+      "category": "search",
+      "keywords": ["grep", "search", "case"],
+      "helpfulness": 0.5
+    },
+    {
+      "id": "tip_memory_001",
+      "text": "Create memory files for patterns you repeat (save tokens).",
+      "link": "/dodojo:archive-orphans",
+      "category": "memory",
+      "keywords": ["memory", "create", "save", "pattern"],
+      "helpfulness": 0.5
+    },
+    {
+      "id": "tip_memory_002",
+      "text": "/dodojo:recall injects memory automatically (no copy-paste).",
+      "link": "/dodojo:recall",
+      "category": "memory",
+      "keywords": ["memory", "recall", "inject", "reuse"],
+      "helpfulness": 0.5
+    },
+    {
+      "id": "tip_memory_003",
+      "text": "Memory frontmatter: name, description, type help smart-context.",
+      "link": "/claude-mem:smart-explore",
+      "category": "memory",
+      "keywords": ["memory", "metadata", "frontmatter"],
+      "helpfulness": 0.5
+    },
+    {
+      "id": "tip_memory_004",
+      "text": "Compress old memories to reduce token injection (Phase 2).",
+      "link": "/dodojo:compress",
+      "category": "memory",
+      "keywords": ["memory", "compress", "save", "tokens"],
+      "helpfulness": 0.5
+    },
+    {
+      "id": "tip_workflow_001",
+      "text": "/loop repeats a command on interval. Great for polling.",
+      "link": "/loop",
+      "category": "workflow",
+      "keywords": ["loop", "repeat", "poll", "monitor"],
+      "helpfulness": 0.5
+    },
+    {
+      "id": "tip_workflow_002",
+      "text": "/schedule runs Claude Code at a future time (cron-style).",
+      "link": "/schedule",
+      "category": "workflow",
+      "keywords": ["schedule", "cron", "future", "time"],
+      "helpfulness": 0.5
+    },
+    {
+      "id": "tip_workflow_003",
+      "text": "Use prompt templates to avoid clarification loops (save tokens).",
+      "link": "templates",
+      "category": "workflow",
+      "keywords": ["template", "prompt", "structure", "clarity"],
+      "helpfulness": 0.5
+    },
+    {
+      "id": "tip_workflow_004",
+      "text": "Batch small tasks instead of one-off prompts (save overhead).",
+      "link": "batching",
+      "category": "workflow",
+      "keywords": ["batch", "efficiency", "tasks"],
+      "helpfulness": 0.5
+    },
+    {
+      "id": "tip_workflow_005",
+      "text": "/caveman:caveman mode compresses output 60%. Try it!",
+      "link": "/caveman:caveman",
+      "category": "workflow",
+      "keywords": ["caveman", "compress", "terse"],
+      "helpfulness": 0.5
+    },
+    {
+      "id": "tip_sensei_001",
+      "text": "Sensei shows friction patterns. Run /sensei-report for details.",
+      "link": "/sensei-report",
+      "category": "sensei",
+      "keywords": ["sensei", "optimization", "pattern", "friction"],
+      "helpfulness": 0.5
+    },
+    {
+      "id": "tip_sensei_002",
+      "text": "File read 3+×? Create memory instead. Sensei detects this.",
+      "link": "/dodojo:recall",
+      "category": "sensei",
+      "keywords": ["sensei", "repeated", "memory", "reads"],
+      "helpfulness": 0.5
+    },
+    {
+      "id": "tip_sensei_003",
+      "text": "Follow-up chains waste tokens. Use better prompt structure.",
+      "link": "prompting",
+      "category": "sensei",
+      "keywords": ["sensei", "follow-up", "prompts", "efficiency"],
+      "helpfulness": 0.5
+    },
+    {
+      "id": "tip_sensei_004",
+      "text": "Sensei tracks adoption. Mark fixes via /dodojo:adoption.",
+      "link": "/scripts/sensei-adoption.py",
+      "category": "sensei",
+      "keywords": ["sensei", "adoption", "tracking"],
+      "helpfulness": 0.5
+    },
+    {
+      "id": "tip_general_001",
+      "text": "Use /config to customize theme, icons, model settings.",
+      "link": "/config",
+      "category": "general",
+      "keywords": ["config", "settings", "customize"],
+      "helpfulness": 0.5
+    },
+    {
+      "id": "tip_general_002",
+      "text": "/help explains Claude Code CLI features and shortcuts.",
+      "link": "/help",
+      "category": "general",
+      "keywords": ["help", "cli", "shortcuts"],
+      "helpfulness": 0.5
+    },
+    {
+      "id": "tip_general_003",
+      "text": "DoDojo has 4 plugins: claude-mem, caveman, pokemon-buddy, slack.",
+      "link": "/plugin list",
+      "category": "general",
+      "keywords": ["plugins", "extensions", "features"],
+      "helpfulness": 0.5
+    },
+    {
+      "id": "tip_general_004",
+      "text": "/dodojo:status shows DoDojo health + config state.",
+      "link": "/dodojo:status",
+      "category": "general",
+      "keywords": ["status", "health", "config"],
+      "helpfulness": 0.5
+    },
+    {
+      "id": "tip_general_005",
+      "text": "/dodojo:health smoke-tests all hooks. Run if stuck.",
+      "link": "/dodojo:hook-health",
+      "category": "general",
+      "keywords": ["health", "hooks", "debug"],
+      "helpfulness": 0.5
+    }
+  ]
+}
