@@ -61,6 +61,12 @@ Or wait for next Monday 9am (default cron in docs/sensei.md).
 
 Report lands at `~/.claude/dodojo/sensei/reports/` as markdown. Open in editor or Obsidian (if configured).
 
+## Watch it in action
+
+**60-second demo** → [`asciinema play docs/demo.cast`](demo.md)
+
+Shows greeter → pattern mining → Sensei recommendation flow.
+
 ## 5. Next steps
 
 - **Full docs** → [docs/README.md](README.md)
