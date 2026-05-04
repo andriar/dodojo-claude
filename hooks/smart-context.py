@@ -46,7 +46,7 @@ STOPWORDS = {
 }
 
 MIN_WORD_LEN = 3
-MAX_RESULTS = 5
+MAX_RESULTS = 2  # cap injection to top 2 (save ~60% context tokens)
 MIN_SCORE = 2  # below this, suppress
 
 
