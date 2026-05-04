@@ -4,6 +4,41 @@ All notable changes documented here. Format follows [Keep a Changelog](https://k
 
 ## [Unreleased]
 
+## [0.3.27] - 2026-05-05
+
+### Added
+- **Sensei Phase 2: Workflow Optimization** — Smart advisor that detects friction patterns and recommends improvements
+  - `scripts/sensei-analyzer.py` — mines session telemetry, detects 5 pattern types (repeated reads, follow-ups, tool misuse, memory gaps, token waste), ranks by impact
+  - `scripts/sensei-summary.py` — formats analysis for greeter (1 pattern) + full report (5 patterns)
+  - `scripts/sensei-adoption.py` — tracks if user implemented recommendations
+  - `hooks/sensei-telemetry.sh` — Stop hook captures prompts, tokens, tools, files per session → `~/.claude/sensei/telemetry.jsonl`
+  - `hooks/sensei-greeter.sh` — SessionStart hook runs analyzer, displays top pattern in greeter
+  - `docs/sensei-optimization.md` — user guide (patterns, examples, privacy, usage)
+  - `docs/sensei-phase2-telemetry.md` — technical spec (schema, detection rules, output format)
+- Sensei shows 1 optimization recommendation in greeter automatically
+- `/sensei-report` script displays all patterns + adoption tracking + token savings estimate
+
+### How It Works
+1. **Collect**: Stop hook captures prompts, tokens, tools, files per session
+2. **Analyze**: Analyzer detects patterns (repeated reads, follow-ups, tool misuse, etc)
+3. **Recommend**: Greeter shows top pattern + specific suggestion + savings estimate
+4. **Track**: User marks recommendation as adopted, next report shows progress
+
+### Example Pattern
+```
+🟡 Follow Up Chain (clarification loops: 3.0 prompts/task)
+   → Structure prompts: [goal]. Context: [X]. Format: [Y]. Examples: [Z]
+   💰 428 tokens/week savings
+```
+
+### M2 + Sensei Phase 2 Complete
+- ✅ Smart categorized memory (Phase 5c)
+- ✅ Context optimization (Phase 5)
+- ✅ Auto-archival infrastructure (Phase 4)
+- ✅ **Sensei Phase 2: workflow optimization** (NEW)
+- ✅ All documentation + guides
+- Ready for external dogfooding + feedback loop
+
 ## [0.3.26] - 2026-05-04
 
 ### Added
