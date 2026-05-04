@@ -4,6 +4,7 @@ Short topical fragments — one concern each.
 
 | Topic | What it covers |
 |-------|----------------|
+| [quickstart.md](quickstart.md) | Install → ROI in 5 minutes. First-time user journey |
 | [positioning.md](positioning.md) | DoDojo vs caveman vs claude-mem — what each layer does |
 | [sensei.md](sensei.md) | Sensei opt-in rationale, setup cascade, privacy modes |
 | [audit.md](audit.md) | Memory audit + orphan detection |

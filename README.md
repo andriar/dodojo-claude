@@ -35,6 +35,8 @@ Or local development:
 /plugin install dodojo
 ```
 
+**→ [Quickstart](docs/quickstart.md)** — Install → ROI in 5 minutes. New? Start here.
+
 ## Configure
 
 Run the setup wizard once after install:
