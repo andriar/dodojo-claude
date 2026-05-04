@@ -610,36 +610,32 @@ def trend_arrow(this_w: int, last_w: int) -> str:
     return DIM + "→" + RESET
 
 
-def savings_7d() -> int:
-    """Quick estimate of tokens saved last 7 days."""
-    # claude-mem savings
-    cmem_now = 50
-    try:
-        cfg = json.loads((HOME / ".claude-mem" / "settings.json").read_text())
-        cmem_now = int(cfg.get("CLAUDE_MEM_CONTEXT_OBSERVATIONS", 50))
-    except (OSError, json.JSONDecodeError, ValueError):
-        pass
-    save_per_session = max(0, (50 - cmem_now) * 250)
+def memory_reuse_stats_7d() -> tuple[int, int, float]:
+    """Honest memory reuse stats (no token estimation).
 
-    # session count last 7d
+    Returns: (total_files, total_injections, avg_reuse_per_file)
+    """
+    from collections import Counter
+
+    cutoff = int(time.time()) - 7 * 86400
+    reuse_count = Counter()
+
+    # Count injections from session logs
     today = datetime.now().date()
-    sess_count = 0
     for i in range(7):
         f = SESSIONS / f"{today - timedelta(days=i)}.jsonl"
         if f.is_file():
-            sess_count += sum(1 for _ in load_jsonl_n(f, 500))
-    cmem_save = save_per_session * sess_count
+            for record in load_jsonl_n(f, 500):
+                if record.get("ts", 0) < cutoff:
+                    continue
+                for mem in record.get("memories_injected", []):
+                    reuse_count[mem] += 1
 
-    # smart-context savings
-    cutoff = int(time.time()) - 7 * 86400
-    matched = 0
-    if SC_LOG.is_file():
-        for r in load_jsonl_n(SC_LOG, 1000):
-            if r.get("ts", 0) >= cutoff and r.get("matched_count", 0) > 0:
-                matched += 1
-    smart_save = matched * 1900
+    total_files = len(reuse_count)
+    total_injections = sum(reuse_count.values())
+    avg_reuse = total_injections / total_files if total_files > 0 else 0
 
-    return cmem_save + smart_save
+    return total_files, total_injections, avg_reuse
 
 
 def fmt_tok(n: int) -> str:
@@ -945,13 +941,15 @@ def main() -> int:
             out.append(f"     {GREEN}{bullet}{RESET} {a}")
         out.append("")
 
+    # Memory reuse stats (honest metrics)
+    mem_files, mem_injections, mem_avg_reuse = memory_reuse_stats_7d()
+    out.append(f"  {sep_dot}")
+    if mem_files > 0:
+        out.append(f"  {DIM}{_icon('saved')}  memory{RESET}  {GREEN}{BOLD}{mem_files}{RESET} files, {mem_injections} injections ({mem_avg_reuse:.1f}× avg){RESET}")
+
     # Tip
     seed = int(datetime.now().strftime("%Y%j"))
     tip = random.Random(seed).choice(TIPS)
-    out.append(f"  {sep_dot}")
-    saved = savings_7d()
-    if saved > 0:
-        out.append(f"  {DIM}{_icon('saved')}  saved{RESET}  {GREEN}{BOLD}~{fmt_tok(saved)}{RESET} {DIM}tokens last 7d (DoDojo stack){RESET}")
     out.append(f"  {DIM}{_icon('spark')}  tip{RESET}  {tip}")
     out.append("")
 
