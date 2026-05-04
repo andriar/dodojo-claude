@@ -9,7 +9,12 @@ import sys
 from pathlib import Path
 from datetime import datetime, timedelta
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "lib"))
+# Find memory_categorizer (try project dir first, then fallback)
+dodojo_dir = Path.home() / "Development/Labs/DoDojo-claude"
+if (dodojo_dir / "lib").exists():
+    sys.path.insert(0, str(dodojo_dir / "lib"))
+else:
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "lib"))
 
 from memory_categorizer import parse_frontmatter
 

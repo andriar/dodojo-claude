@@ -62,4 +62,9 @@ Beyond single-author. Optional.
 
 **M2 ready to ship.** Remaining: 3 external users + contrib guide (can happen post-launch).
 
+## Completed phases (post-M2)
+
+- ✅ **Phase 5: Smart categorization** (memory metadata + auto-detection + categorized search, 78% smaller search space)
+- ✅ **Phase 4: Maintenance infrastructure** (auto-archive stale memories, prevent unbounded growth)
+
 Updated when items toggle. Maintain alongside CHANGELOG.
