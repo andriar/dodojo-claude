@@ -205,6 +205,12 @@ def main() -> int:
     if not files:
         return 0
 
+    # Compute project memory dir for cwd boost
+    cwd_project_dir = ""
+    if cwd:
+        cwd_slug = cwd.strip("/").replace("/", "-")
+        cwd_project_dir = str(ROOTS[1] / cwd_slug / "memory")
+
     scored: list[tuple[int, Path, dict, str]] = []
     for f in files:
         s, fm, body = score_file(f, tokens)
