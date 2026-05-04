@@ -4,6 +4,8 @@ All notable changes documented here. Format follows [Keep a Changelog](https://k
 
 ## [Unreleased]
 
+## [0.3.29] - 2026-05-05
+
 ## [0.3.27] - 2026-05-05
 
 ### Added
