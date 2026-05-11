@@ -17,6 +17,19 @@ GREETER = REPO / "hooks" / "dodojo-greet.py"
 OUT = REPO / "assets" / "theme-previews.json"
 
 SWATCH_KEYS = ("primary", "accent", "success", "warn", "crit", "info")
+RESET = "\033[0m"
+
+
+def _ansi(rgb: tuple[int, int, int] | None) -> str:
+    if rgb is None:
+        return ""
+    r, g, b = rgb
+    return f"\033[38;2;{r};{g};{b}m"
+
+
+def _wrap(rgb: tuple[int, int, int] | None, text: str) -> str:
+    code = _ansi(rgb)
+    return f"{code}{text}{RESET}" if code else text
 
 
 def _xterm_to_rgb(n: int) -> tuple[int, int, int]:
@@ -120,17 +133,42 @@ def render(name: str, deco: dict[str, str], palette: dict[str, tuple[int, int, i
     tagline = deco["tagline"]
     div = deco["div"]
     sig = deco["sig"]
-    bar = div * 28
-    bullets = (bullet + " ") * 6
+    bar_raw = div * 36
+    primary = palette.get("primary")
+    accent = palette.get("accent")
+    success = palette.get("success")
+    warn = palette.get("warn")
+    crit = palette.get("crit")
+    info = palette.get("info")
+
+    bar = _wrap(accent, bar_raw)
+    section = lambda label: f"  {_wrap(accent, bullet)} {_wrap(primary, label)}"
+    sig_tail = f"   {_wrap(crit, sig)}" if sig else ""
+
     lines = [
         _swatch_line(palette),
-        bullets.rstrip(),
-        f"DODOJO · {name}",
-        f"  {tagline}",
+        bar,
+        f"  {_wrap(accent, bullet)} {_wrap(primary, f'D O D O J O · {name}')}{sig_tail}",
+        f"     {_wrap(info, tagline)}",
+        bar,
+        "",
+        section("Memory health"),
+        f"     {_wrap(success, '78 files')} · {_wrap(success, '12 reused')} this week (saved ~{_wrap(warn, '6.2k tok')})",
+        f"     INDEX 142 lines · {_wrap(success, '0 orphans')} · {_wrap(warn, '1 expiring')} soon",
+        "",
+        section("Buddy"),
+        f"     {_wrap(accent, 'Pidgey Lv.24')} · {_wrap(success, '506/800 XP')} · combo {_wrap(crit, '×3 🔥')}",
+        f"     Quest: ship to production {_wrap(success, '[✓ DONE]')}",
+        "",
+        section("Quick actions"),
+        f"     {_wrap(info, '/recall <query>')} — cross-silo search",
+        f"     {_wrap(info, '/dodojo:audit')}  — context budget check",
+        f"     {_wrap(info, '/poke:status')}   — buddy card",
+        "",
+        section("Tip"),
+        f"     {_wrap(warn, 'theme-picker.sh')} runs in shell — {_wrap(success, '0 tokens')} per switch",
         bar,
     ]
-    if sig:
-        lines.append(f"  {sig}")
     return "\n".join(lines)
 
 

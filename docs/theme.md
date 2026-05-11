@@ -73,6 +73,36 @@ bash scripts/preview-greet.sh
 
 Renders current greeter to stdout immediately. Useful when iterating themes.
 
+## Standalone shell picker (zero-token)
+
+`scripts/theme-picker.sh` switches themes purely in your terminal — no Claude tokens spent. Best for frequent theme swaps.
+
+**Install once** (Linux/macOS/WSL):
+
+```bash
+# Pick one of these:
+ln -sf "$PWD/scripts/theme-picker.sh" ~/.local/bin/dodojo-theme      # Linux/WSL (ensure ~/.local/bin in PATH)
+ln -sf "$PWD/scripts/theme-picker.sh" /usr/local/bin/dodojo-theme    # macOS (system-wide, may need sudo)
+```
+
+**Usage**:
+
+```bash
+dodojo-theme                  # interactive picker (fzf if installed, else numbered menu)
+dodojo-theme jjk              # apply directly
+dodojo-theme --list           # newline-delimited theme names (pipe-friendly)
+dodojo-theme --help
+```
+
+**Deps**: `bash 3+`, AND (`jq` OR `python3`). Optional: `fzf` for live preview pane.
+
+| OS | Install hints |
+|----|---------------|
+| Linux | `sudo apt install jq fzf` |
+| macOS | `brew install jq fzf` (python3 pre-installed) |
+| WSL   | `sudo apt install jq fzf` |
+| Windows native | Not supported — use WSL |
+
 ## Adding a custom theme
 
 Themes are defined inline in `hooks/dodojo-greet.py` — search for the palette dict (~line where `pastel`, `neon`, `retro` are declared). Add a new entry with: ANSI codes, bullet, tagline, divider, signature. PRs welcome.
