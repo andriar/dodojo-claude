@@ -4,6 +4,11 @@ All notable changes documented here. Format follows [Keep a Changelog](https://k
 
 ## [Unreleased]
 
+## [0.3.31] - 2026-05-11
+
+### Added
+- `/dodojo:theme` interactive picker — call without arg → `AskUserQuestion` drill-down (group → theme) instead of requiring name upfront
+
 ## [0.3.30] - 2026-05-05
 
 ## [0.3.29] - 2026-05-05
