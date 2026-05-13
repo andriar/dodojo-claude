@@ -4,6 +4,11 @@ All notable changes documented here. Format follows [Keep a Changelog](https://k
 
 ## [Unreleased]
 
+## [0.3.36] - 2026-05-13
+
+### Changed
+- `cost-guard` hook now enforces `dodojo:surgical-edit` protocol: blocks `Read` calls on files >5K lines / >300KB unless `offset`+`limit` are set. Stops the model from token-bombing on huge blade/generated files. Tested against a real 14,992-line / 785KB blade — blocked with ~209K-token estimate and surgical-edit guidance, while small files and windowed Reads pass clean.
+
 ## [0.3.35] - 2026-05-13
 
 ### Added
