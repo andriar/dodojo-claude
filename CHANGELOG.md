@@ -4,6 +4,11 @@ All notable changes documented here. Format follows [Keep a Changelog](https://k
 
 ## [Unreleased]
 
+## [0.3.35] - 2026-05-13
+
+### Added
+- `dodojo:surgical-edit` skill — runtime token-saver for big files (>5K lines / >300KB). Protocol: grep+offset Read, no full-file reload, no re-Read on same file. Auto-triggers when user touches files like `inbox.blade.php` (15K lines) or flags a file as "gede"/"huge". Real case: prior session burned ~1M tokens on 15× full Reads of one 800KB blade — surgical-edit cuts that to ~10K tokens (~100× savings).
+
 ## [0.3.34] - 2026-05-11
 
 ## [0.3.33] - 2026-05-11
