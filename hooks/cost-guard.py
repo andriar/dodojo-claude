@@ -18,6 +18,9 @@ Bash:
 
 Read:
   - file_path inside /var/log/, /proc/, /sys/ without `limit` arg
+  - file_path > BIG_FILE_LINES (5000) without `offset`+`limit` — enforces
+    `surgical-edit` skill (grep + window Read) to stop full re-reads
+    burning tokens on huge files like 15K-line blade views.
 
 Tool args are inspected only for the current call; nothing else.
 """
@@ -25,8 +28,12 @@ Tool args are inspected only for the current call; nothing else.
 from __future__ import annotations
 
 import json
+import os
 import re
 import sys
+
+BIG_FILE_LINES = 5000
+BIG_FILE_BYTES = 300 * 1024
 
 # Bash command patterns that should be blocked (regex, case-sensitive)
 BLOCK_BASH = [
@@ -75,6 +82,29 @@ def main() -> int:
                 f"Read of {path} without a `limit` arg may load megabytes.\n"
                 f"  Add `limit: 200` (or similar) to the Read call."
             )
+        if args.get("offset") or args.get("limit"):
+            return 0
+        try:
+            st = os.stat(path)
+        except (OSError, ValueError):
+            return 0
+        if st.st_size < BIG_FILE_BYTES:
+            return 0
+        try:
+            with open(path, "rb") as f:
+                lines = sum(1 for _ in f)
+        except OSError:
+            return 0
+        if lines < BIG_FILE_LINES:
+            return 0
+        return block(
+            f"Read of {path} ({lines:,} lines / {st.st_size//1024} KB) "
+            f"without `offset`+`limit` — would burn ~{lines * 14 // 1000}K tokens.\n"
+            f"  Use surgical-edit protocol:\n"
+            f"    1. Bash: grep -n '<target>' {path}\n"
+            f"    2. Read {path} offset=<line-20> limit=60\n"
+            f"  See `dodojo:surgical-edit` skill for full protocol."
+        )
 
     return 0
 
