@@ -4,6 +4,18 @@ All notable changes documented here. Format follows [Keep a Changelog](https://k
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-05-23
+
+### Added
+
+- **`bin/greeter-lean.sh`** + **SessionStart hook** — minimal greeter that prints **one line** only when there's actionable info (prune candidates ≥1, or passive load ≥12K tokens). Silent when stack is clean (0 tokens). Costs ~15 tokens when speaking. Reads pre-computed state from `~/.claude/dodojo/state/audit-stack.json` — no scanning at hook time.
+
+Designed as the lean alternative to `dodojo-greet.sh`. The two can coexist:
+- `dodojo-greet.sh` (heavy, themed) — already terminal-only by default via `DODOJO_GREETER_MODE=terminal`, so adds 0 Claude tokens
+- `greeter-lean.sh` (one-liner alert) — fires as `additionalContext`, but silent until something needs attention
+
+Together they support the philosophy: visibility ≠ passive context. The terminal greeter is shell visibility (free); the lean greeter is sparse Claude visibility (cheap, only when warranted).
+
 ## [0.4.0] - 2026-05-23
 
 ### Added — Lean architecture pivot
