@@ -4,6 +4,20 @@ All notable changes documented here. Format follows [Keep a Changelog](https://k
 
 ## [Unreleased]
 
+### Added
+- **Heartbeat alert** (`hooks/heartbeat-check.py`, SessionStart). Detects silent Stop-hook outage by comparing latest `sessions/*.jsonl` mtime vs latest `projects/**/*.jsonl` mtime. Writes one warn-level entry to `alerts.jsonl` per outage window (idempotent). Threshold via `DODOJO_HEARTBEAT_STALE_HOURS` (default 12).
+- **Cache GC** (`scripts/cache-gc.sh`). Dry-run by default, `--apply` to delete. Keeps `KEEP` newest semver versions in `~/.claude/plugins/cache/dodojo/dodojo/`.
+- **Schema version** `"v": 2` on records emitted by `session-summary.py` and `bin/log-session-stop.sh`. Greeter aggregators already use `.get(key, default)` so v1 records remain readable.
+
+### Changed
+- **Turn identity by `session_id`** (not wall clock). `smart-context.py` now records `session_id` on each telemetry entry; `session-summary.py` matches `memories_injected` by ID with a `±600s` fallback for legacy v1 records. Eliminates cross-session attribution noise.
+- **Atomic memory metadata write**. `lib/memory_categorizer.update_memory_metadata` writes via sibling `.tmp` + `os.replace`. Prevents truncation on crash and removes the race window when parallel Stop hooks update the same memory file.
+- **Disambiguation docs** (`docs/command-disambiguation.md`, `docs/hook-taxonomy.md`). Maps `audit` / `audit-memory` / `prune` / `prune-memory` to their actual domains; documents which hooks are assertive (block on exit 2) vs passive (additive only).
+- **Command title typos** fixed in `commands/audit-memory.md` and `commands/prune-memory.md` (both rendered as `/dodojo:audit` / `/dodojo:prune` regardless of file name).
+
+### Fixed
+- **Double-registered Stop hook**. Documentation reminder: `log-session-stop.sh` should only be registered via plugin `hooks.json` — duplicate entries in user `~/.claude/settings.json` cause every Stop record to be written twice. Migration users: remove the manual entry.
+
 ## [0.4.3] - 2026-05-23
 
 ### Fixed — race condition between greeter and refresh

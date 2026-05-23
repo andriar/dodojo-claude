@@ -180,29 +180,38 @@ def main() -> int:
         # Empty turn — skip
         return 0
 
-    # Track which memories were injected this session
+    # Track which memories were injected this session.
+    # Prefer session_id match (v2 smart-context records); fall back to ±600s
+    # wall-clock window for legacy v1 records that lack session_id.
     injected_memories = []
     sc_log = DODOJO_DATA / "hooks" / "smart-context.log"
     if sc_log.is_file():
+        now_ts = int(time.time())
         try:
-            for line in sc_log.read_text(errors="replace").splitlines()[-50:]:  # last 50 entries
+            for line in sc_log.read_text(errors="replace").splitlines()[-50:]:
                 line = line.strip()
                 if not line:
                     continue
                 try:
                     entry = json.loads(line)
-                    # Only count entries from this session (roughly, by timestamp)
-                    if abs(entry.get("ts", 0) - int(time.time())) < 600:  # within 10 min
-                        for match in entry.get("matches", []):
-                            file = match.get("file", "")
-                            if file and file not in injected_memories:
-                                injected_memories.append(file)
                 except json.JSONDecodeError:
                     continue
+                entry_sid = entry.get("session_id") or ""
+                if entry_sid:
+                    if entry_sid != session_id:
+                        continue
+                else:
+                    if abs(entry.get("ts", 0) - now_ts) >= 600:
+                        continue
+                for match in entry.get("matches", []):
+                    file = match.get("file", "")
+                    if file and file not in injected_memories:
+                        injected_memories.append(file)
         except OSError:
             pass
 
     record = {
+        "v": 2,
         "ts": int(time.time()),
         "iso": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
         "session_id": session_id,
@@ -213,8 +222,8 @@ def main() -> int:
         "files_touched_count": len(files_touched),
         "user_chars": user_chars,
         "assistant_chars": assistant_chars,
-        "memories_injected": injected_memories,  # ← NEW
-        "memory_inject_count": len(injected_memories),  # ← NEW
+        "memories_injected": injected_memories,
+        "memory_inject_count": len(injected_memories),
     }
 
     SESSIONS_DIR.mkdir(parents=True, exist_ok=True)

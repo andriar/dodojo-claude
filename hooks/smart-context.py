@@ -199,6 +199,7 @@ def main() -> int:
         return 0
 
     cwd = payload.get("cwd") or ""
+    session_id = payload.get("session_id") or ""
 
     # v2: collect by category (85% smaller search space)
     files = collect_memory_files_by_category(tokens, cwd)
@@ -223,7 +224,7 @@ def main() -> int:
     scored.sort(key=lambda x: x[0], reverse=True)
     top = scored[:MAX_RESULTS]
     if not top:
-        log_telemetry(prompt, tokens, [], len(files))
+        log_telemetry(prompt, tokens, [], len(files), session_id)
         return 0
 
     out = ["[smart-context] memory matches (Read full body if needed):"]
@@ -237,16 +238,20 @@ def main() -> int:
         out.append(f"    `{rel}`")
 
     print("\n".join(out))
-    log_telemetry(prompt, tokens, top, len(files))
+    log_telemetry(prompt, tokens, top, len(files), session_id)
     return 0
 
 
-def log_telemetry(prompt: str, tokens: set[str], top: list, total_files: int) -> None:
+def log_telemetry(
+    prompt: str, tokens: set[str], top: list, total_files: int, session_id: str = ""
+) -> None:
     import hashlib
     import time
     log_path = DODOJO_DATA / "hooks" / "smart-context.log"
     record = {
+        "v": 2,
         "ts": int(time.time()),
+        "session_id": session_id,
         "prompt_hash": hashlib.sha1(prompt.encode("utf-8")).hexdigest()[:10],
         "prompt_len": len(prompt),
         "token_count": len(tokens),
