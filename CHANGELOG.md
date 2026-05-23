@@ -4,6 +4,8 @@ All notable changes documented here. Format follows [Keep a Changelog](https://k
 
 ## [Unreleased]
 
+## [0.4.5] - 2026-05-23
+
 ### Added
 - **`lib/paths.py`** — canonical path helper that separates user-owned data (`~/.claude/memory/`, themes, alerts) from plugin telemetry (`~/.claude/plugins/data/dodojo-dodojo/sessions/`, `…/hooks/`). Override via `DODOJO_TELEMETRY_HOME`.
 - **`scripts/migrate-telemetry.sh`** — one-shot copy/move of historical `sessions/*.jsonl` and known plugin hook logs from `~/.claude/` to `plugins/data/dodojo-dodojo/`. Safe (copy by default), `--move` to relocate, `--dry-run` to preview.

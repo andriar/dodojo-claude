@@ -8,7 +8,7 @@
   },
   "metadata": {
     "description": "The plugin that audits your plugins. Free until you ask. Zero-token CLI (dj) for stack audit, prune, statusline.",
-    "version": "0.4.4"
+    "version": "0.4.5"
   },
   "plugins": [
     {
@@ -18,7 +18,7 @@
         "source": "url",
         "url": "https://github.com/andriar/dodojo-claude.git"
       },
-      "version": "0.4.4",
+      "version": "0.4.5",
       "category": "productivity"
     }
   ]
