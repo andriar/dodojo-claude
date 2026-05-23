@@ -120,6 +120,7 @@ if first_ts and last_ts:
         pass
 
 summary = {
+    'v': 2,
     'ts': datetime.now().astimezone().strftime('%Y-%m-%dT%H:%M:%S%z'),
     'session_id': session_id,
     'cwd': cwd,

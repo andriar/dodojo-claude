@@ -9,6 +9,7 @@ Provides:
 """
 
 import json
+import os
 import re
 import time
 from collections import Counter
@@ -171,7 +172,12 @@ def rank_memories(
 
 
 def update_memory_metadata(filepath: Path, updates: Dict) -> None:
-    """Update metadata fields in an existing memory file."""
+    """Update metadata fields in an existing memory file.
+
+    Atomic write: serialize to a sibling tmp file, then os.replace into place.
+    Prevents truncation/corruption on crash, and is safe against concurrent
+    Stop hooks racing to update the same file.
+    """
     try:
         content = filepath.read_text(encoding="utf-8")
     except OSError:
@@ -181,7 +187,18 @@ def update_memory_metadata(filepath: Path, updates: Dict) -> None:
     metadata.update(updates)
 
     new_content = write_frontmatter(metadata, body)
-    filepath.write_text(new_content, encoding="utf-8")
+    if new_content == content:
+        return
+
+    tmp_path = filepath.with_suffix(filepath.suffix + ".tmp")
+    try:
+        tmp_path.write_text(new_content, encoding="utf-8")
+        os.replace(tmp_path, filepath)
+    except OSError:
+        try:
+            tmp_path.unlink(missing_ok=True)
+        except OSError:
+            pass
 
 
 def ensure_memory_has_metadata(filepath: Path) -> Dict:

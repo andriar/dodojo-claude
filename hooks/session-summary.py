@@ -70,26 +70,50 @@ def update_memory_usage(memory_files: list[str]) -> None:
             pass
 
 
-def _resolve_buddy_dir() -> Path:
+def _resolve_buddy_dir() -> Path | None:
     """Discover where pokemon-buddy plugin stores state.
 
-    Plugin hardcodes ~/.claude/ but user may relocate. Cascade:
-    1. POKEMON_BUDDY_HOME env override
-    2. Probe known candidates for sentinel file
-    3. Fallback to plugin default ~/.claude/
+    Opt-in contract: this bridge only fires when pokemon-buddy is actually
+    installed. Detection cascade:
+
+    1. `DODOJO_POKEMON_XP_QUEUE` — explicit path to the XP queue file.
+       If set, returns its parent. Most explicit, recommended.
+    2. `POKEMON_BUDDY_HOME` env var — points at the buddy data dir.
+       Used when buddy is at a non-standard location.
+    3. Sentinel probe — look for `buddy-pokemon.md` in known candidates.
+       This is the marker buddy itself writes; absence means buddy is not
+       installed and the bridge stays silent.
+
+    Returns None when buddy isn't detected — caller must skip the write.
+    Previously this fell back to `~/.claude/` which created a ghost file
+    even when buddy was uninstalled.
     """
+    explicit = os.environ.get("DODOJO_POKEMON_XP_QUEUE")
+    if explicit:
+        return Path(explicit).expanduser().parent
+
     if env := os.environ.get("POKEMON_BUDDY_HOME"):
         p = Path(env).expanduser()
-        if p.is_dir():
+        if p.is_dir() and (p / "buddy-pokemon.md").is_file():
             return p
+
     for cand in (HOME / ".claude", DODOJO_DATA, HOME / ".pokemon-buddy"):
         if (cand / "buddy-pokemon.md").is_file():
             return cand
-    return HOME / ".claude"
+
+    return None
 
 
 BUDDY_HOME = _resolve_buddy_dir()
-SESSIONS_DIR = DODOJO_DATA / "sessions"
+# Canonical telemetry location lives under plugins/data/dodojo-dodojo/ (see
+# lib/paths.py). lib/ is already on sys.path from the memory_categorizer
+# import above. Fall back to the historical DODOJO_DATA/sessions/ if the
+# helper is missing (older install).
+try:
+    from paths import sessions_dir_write as _sessions_dir_write  # type: ignore
+    SESSIONS_DIR = _sessions_dir_write()
+except ImportError:
+    SESSIONS_DIR = DODOJO_DATA / "sessions"
 TOUCH_TOOLS = {"Read", "Write", "Edit", "MultiEdit", "NotebookEdit"}
 
 
@@ -180,29 +204,38 @@ def main() -> int:
         # Empty turn — skip
         return 0
 
-    # Track which memories were injected this session
+    # Track which memories were injected this session.
+    # Prefer session_id match (v2 smart-context records); fall back to ±600s
+    # wall-clock window for legacy v1 records that lack session_id.
     injected_memories = []
     sc_log = DODOJO_DATA / "hooks" / "smart-context.log"
     if sc_log.is_file():
+        now_ts = int(time.time())
         try:
-            for line in sc_log.read_text(errors="replace").splitlines()[-50:]:  # last 50 entries
+            for line in sc_log.read_text(errors="replace").splitlines()[-50:]:
                 line = line.strip()
                 if not line:
                     continue
                 try:
                     entry = json.loads(line)
-                    # Only count entries from this session (roughly, by timestamp)
-                    if abs(entry.get("ts", 0) - int(time.time())) < 600:  # within 10 min
-                        for match in entry.get("matches", []):
-                            file = match.get("file", "")
-                            if file and file not in injected_memories:
-                                injected_memories.append(file)
                 except json.JSONDecodeError:
                     continue
+                entry_sid = entry.get("session_id") or ""
+                if entry_sid:
+                    if entry_sid != session_id:
+                        continue
+                else:
+                    if abs(entry.get("ts", 0) - now_ts) >= 600:
+                        continue
+                for match in entry.get("matches", []):
+                    file = match.get("file", "")
+                    if file and file not in injected_memories:
+                        injected_memories.append(file)
         except OSError:
             pass
 
     record = {
+        "v": 2,
         "ts": int(time.time()),
         "iso": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
         "session_id": session_id,
@@ -213,8 +246,8 @@ def main() -> int:
         "files_touched_count": len(files_touched),
         "user_chars": user_chars,
         "assistant_chars": assistant_chars,
-        "memories_injected": injected_memories,  # ← NEW
-        "memory_inject_count": len(injected_memories),  # ← NEW
+        "memories_injected": injected_memories,
+        "memory_inject_count": len(injected_memories),
     }
 
     SESSIONS_DIR.mkdir(parents=True, exist_ok=True)
@@ -228,11 +261,17 @@ def main() -> int:
     # Phase 5b: Auto-update memory metadata (reuse count + last_used)
     update_memory_usage(record.get("memories_injected", []))
 
-    # Bridge to Pokémon buddy XP system: queue an XP grant if turn is "meaningful"
-    # (>= 5 tool invocations AND touched at least one file). Pokemon Coach skill /
-    # SessionStart greeter can surface this for /poke:xp claim.
-    if record["tool_total"] >= 5 and record["files_touched_count"] >= 1:
-        xp_log = BUDDY_HOME / "buddy-xp-pending.jsonl"
+    # Optional bridge to pokemon-buddy XP system. Only fires when buddy is
+    # actually installed (BUDDY_HOME != None) — see _resolve_buddy_dir.
+    # Bypass via DODOJO_SKIP_BUDDY_XP=1.
+    if (
+        BUDDY_HOME is not None
+        and os.environ.get("DODOJO_SKIP_BUDDY_XP", "0") != "1"
+        and record["tool_total"] >= 5
+        and record["files_touched_count"] >= 1
+    ):
+        explicit = os.environ.get("DODOJO_POKEMON_XP_QUEUE")
+        xp_log = Path(explicit).expanduser() if explicit else BUDDY_HOME / "buddy-xp-pending.jsonl"
         xp_record = {
             "ts": record["ts"],
             "iso": record["iso"],
@@ -243,6 +282,7 @@ def main() -> int:
             "claimed": False,
         }
         try:
+            xp_log.parent.mkdir(parents=True, exist_ok=True)
             with xp_log.open("a", encoding="utf-8") as f:
                 f.write(json.dumps(xp_record) + "\n")
         except OSError:

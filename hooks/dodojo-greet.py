@@ -30,6 +30,20 @@ ROUTE_LOG = DODOJO_DATA / "hooks" / "model-route.log"
 SESSIONS = DODOJO_DATA / "sessions"
 MEM_DIR = DODOJO_DATA / "memory"
 
+# Compat shim: telemetry migrated to plugins/data/dodojo-dodojo/. Readers
+# merge both locations so historical data isn't lost during the migration
+# window. Writers always use the canonical (new) path — see lib/paths.py.
+try:
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "lib"))
+    from paths import sessions_dirs_read, hook_log_reads  # type: ignore
+    _SESSIONS_READS = sessions_dirs_read()
+    _SC_LOG_READS = hook_log_reads("smart-context.log")
+    _ROUTE_LOG_READS = hook_log_reads("model-route.log")
+except ImportError:
+    _SESSIONS_READS = [SESSIONS]
+    _SC_LOG_READS = [SC_LOG]
+    _ROUTE_LOG_READS = [ROUTE_LOG]
+
 
 def _resolve_buddy_dir() -> Path:
     """Discover where pokemon-buddy plugin stores state.
@@ -698,7 +712,10 @@ def main() -> int:
     cutoff_7d = now - 7 * 86400
 
     # --- Telemetry ---
-    sc_recent = load_jsonl_n(SC_LOG, max_lines=300)
+    # Merge across canonical + legacy locations during migration window.
+    sc_recent: list[dict] = []
+    for p in _SC_LOG_READS:
+        sc_recent.extend(load_jsonl_n(p, max_lines=300))
     sc_7d = sum(1 for r in sc_recent if r.get("ts", 0) >= cutoff_7d)
 
     today = datetime.now().date()
@@ -707,8 +724,11 @@ def main() -> int:
     files_7d = 0
     for i in range(13, -1, -1):
         day = today - timedelta(days=i)
-        f = SESSIONS / f"{day}.jsonl"
-        records = load_jsonl_n(f) if f.is_file() else []
+        records: list[dict] = []
+        for root in _SESSIONS_READS:
+            f = root / f"{day}.jsonl"
+            if f.is_file():
+                records.extend(load_jsonl_n(f))
         sess_14.append(len(records))
         tools_14.append(sum(r.get("tool_total", 0) for r in records))
         if i <= 6:
@@ -775,9 +795,11 @@ def main() -> int:
     route_total_7d = 0
     route_mix = {"trivial": 0, "medium": 0, "hard": 0}
     route_uncovered = 0
-    if ROUTE_LOG.is_file():
-        cutoff = time.time() - 7 * 86400
-        for r in load_jsonl_n(ROUTE_LOG, 500):
+    cutoff = time.time() - 7 * 86400
+    for route_path in _ROUTE_LOG_READS:
+        if not route_path.is_file():
+            continue
+        for r in load_jsonl_n(route_path, 500):
             if r.get("ts", 0) < cutoff:
                 continue
             v = r.get("verdict")
