@@ -130,6 +130,8 @@ Most plugins wrap every operation in a skill. We wrap none of the script-able on
 
 No background services. No web dashboard. The statusline reads a JSON state file refreshed by a SessionStart hook. Total passive cost: zero processes, zero tokens.
 
+> Curious why we chose statusline over the classic SessionStart greeter? See [`docs/greeter-vs-statusline.md`](docs/greeter-vs-statusline.md) — the tradeoff is real and worth understanding.
+
 ---
 
 ## Where this fits in the token-saver ecosystem

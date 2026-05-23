@@ -132,3 +132,7 @@ The end user gets:
 - A fast statusline (reads pre-computed state, no live work)
 
 The plugin ecosystem benefits if more authors adopt this. DoDojo aims to be the reference implementation.
+
+## Related
+
+- [`greeter-vs-statusline.md`](greeter-vs-statusline.md) — concrete application of the "visibility ≠ passive context" principle to a real design choice users have to make.
