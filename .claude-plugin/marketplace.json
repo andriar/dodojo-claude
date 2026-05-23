@@ -7,18 +7,18 @@
     "url": "https://github.com/andriar"
   },
   "metadata": {
-    "description": "The plugin that audits your plugins. Free until you ask. Zero-token CLI (dj) for stack audit, prune, statusline.",
-    "version": "0.4.5"
+    "description": "Three-plugin set for Claude Code: dodojo-core (CLI + telemetry), dodojo-guards (safety blockers), dodojo-sensei (ROI advisor). Legacy `dodojo` retained as deprecated meta.",
+    "version": "0.5.0"
   },
   "plugins": [
     {
       "name": "dodojo",
-      "description": "Audits your Claude Code plugin stack for passive token cost. Zero-token `dj` CLI: audit, prune, statusline. Skills are escalation-only.",
+      "description": "[DEPRECATED \u2014 install dodojo-core + dodojo-guards + dodojo-sensei] Legacy bundle, retained for back-compat. Empty hooks; nothing fires on install.",
       "source": {
         "source": "url",
         "url": "https://github.com/andriar/dodojo-claude.git"
       },
-      "version": "0.4.5",
+      "version": "0.5.0",
       "category": "productivity"
     },
     {
@@ -29,18 +29,18 @@
         "url": "https://github.com/andriar/dodojo-claude.git",
         "path": "plugins/dodojo-guards"
       },
-      "version": "0.1.0",
+      "version": "0.5.0",
       "category": "safety"
     },
     {
       "name": "dodojo-core",
-      "description": "DoDojo core — zero-token `dj` CLI for stack audit/prune, session telemetry, greeter, heartbeat alerts, and maintenance skills (memory curator, surgical-edit, recall, etc).",
+      "description": "DoDojo core \u2014 zero-token `dj` CLI for stack audit/prune, session telemetry, greeter, heartbeat alerts, and maintenance skills (memory curator, surgical-edit, recall, etc).",
       "source": {
         "source": "url",
         "url": "https://github.com/andriar/dodojo-claude.git",
         "path": "plugins/dodojo-core"
       },
-      "version": "0.1.0",
+      "version": "0.5.0",
       "category": "productivity"
     },
     {
@@ -51,7 +51,7 @@
         "url": "https://github.com/andriar/dodojo-claude.git",
         "path": "plugins/dodojo-sensei"
       },
-      "version": "0.1.0",
+      "version": "0.5.0",
       "category": "productivity"
     }
   ]

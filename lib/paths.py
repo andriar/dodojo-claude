@@ -10,14 +10,20 @@ canonical location plus legacy fallback paths so readers stay compatible
 during the migration window.
 
 Override via `DODOJO_DATA` (user-data root) and `DODOJO_TELEMETRY_HOME`
-(plugin telemetry root). Default split:
+(plugin telemetry root). Default split (Phase 4 onward):
 
     DODOJO_DATA            = ~/.claude
-    DODOJO_TELEMETRY_HOME  = ~/.claude/plugins/data/dodojo-dodojo
+    DODOJO_TELEMETRY_HOME  = ~/.claude/plugins/data/dodojo-core
 
 Helpers return the *write* path (always canonical) and a list of *read* paths
 (canonical first, then legacy). Writers should always use the canonical path;
 readers should iterate over the legacy list to merge historical data.
+
+Read-compat chain (most-recent-canonical first):
+
+    1. plugins/data/dodojo-core/   (Phase 4 canonical)
+    2. plugins/data/dodojo-dodojo/ (Phase 1–3 canonical; pre-split plugin name)
+    3. ~/.claude/sessions, ~/.claude/hooks (pre-namespace-migration, v0.4.3 and earlier)
 """
 
 from __future__ import annotations
@@ -29,8 +35,13 @@ HOME = Path.home()
 USER_DATA = Path(os.environ.get("DODOJO_DATA") or str(HOME / ".claude"))
 TELEMETRY_HOME = Path(
     os.environ.get("DODOJO_TELEMETRY_HOME")
-    or str(USER_DATA / "plugins" / "data" / "dodojo-dodojo")
+    or str(USER_DATA / "plugins" / "data" / "dodojo-core")
 )
+# Legacy telemetry dir from Phase 1–3 (before plugin rename). Readers still
+# pick it up so historical data is not orphaned by the dir rename.
+LEGACY_TELEMETRY_HOMES = [
+    USER_DATA / "plugins" / "data" / "dodojo-dodojo",
+]
 
 
 def sessions_dir_write() -> Path:
@@ -38,7 +49,10 @@ def sessions_dir_write() -> Path:
 
 
 def sessions_dirs_read() -> list[Path]:
-    return [TELEMETRY_HOME / "sessions", USER_DATA / "sessions"]
+    dirs = [TELEMETRY_HOME / "sessions"]
+    dirs.extend(legacy / "sessions" for legacy in LEGACY_TELEMETRY_HOMES)
+    dirs.append(USER_DATA / "sessions")
+    return dirs
 
 
 def hook_log_write(name: str) -> Path:
@@ -46,7 +60,10 @@ def hook_log_write(name: str) -> Path:
 
 
 def hook_log_reads(name: str) -> list[Path]:
-    return [TELEMETRY_HOME / "hooks" / name, USER_DATA / "hooks" / name]
+    paths = [TELEMETRY_HOME / "hooks" / name]
+    paths.extend(legacy / "hooks" / name for legacy in LEGACY_TELEMETRY_HOMES)
+    paths.append(USER_DATA / "hooks" / name)
+    return paths
 
 
 def alerts_file() -> Path:

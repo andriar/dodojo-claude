@@ -7,6 +7,19 @@ A Claude Code plugin built on one rule: **scripts do the work, Claude is only in
 
 ---
 
+> ⚠️ **v0.5.0 — the monolithic `dodojo` plugin is deprecated.** It now ships with empty `hooks.json` and exists only for back-compat with old installs. Install the three-way split instead:
+>
+> ```sh
+> /plugin marketplace add andriar/dodojo-claude
+> /plugin install dodojo-core@dodojo      # greeter, telemetry, CLI, maintenance skills
+> /plugin install dodojo-guards@dodojo    # safety blockers (optional)
+> /plugin install dodojo-sensei@dodojo    # ROI advisor (optional)
+> ```
+>
+> Existing `dodojo` users: no immediate action required. Hooks fall silent after `/plugin marketplace update`, but no data is lost (telemetry readers merge legacy locations). See [`docs/architecture/plugin-split-plan.md`](docs/architecture/plugin-split-plan.md).
+
+---
+
 ## Why this exists
 
 Every Claude Code plugin you install loads its skill descriptions into your context — every single session, before you type a thing. Most users have no idea how much that costs.
