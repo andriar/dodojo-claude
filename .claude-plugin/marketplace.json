@@ -31,6 +31,17 @@
       },
       "version": "0.1.0",
       "category": "safety"
+    },
+    {
+      "name": "dodojo-core",
+      "description": "DoDojo core — zero-token `dj` CLI for stack audit/prune, session telemetry, greeter, heartbeat alerts, and maintenance skills (memory curator, surgical-edit, recall, etc).",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/andriar/dodojo-claude.git",
+        "path": "plugins/dodojo-core"
+      },
+      "version": "0.1.0",
+      "category": "productivity"
     }
   ]
 }

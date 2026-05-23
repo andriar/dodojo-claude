@@ -1,6 +1,6 @@
 # Plugin split plan
 
-Status: **in progress**. Phase 1 (guards) shipping in this PR; phases 2-3 follow.
+Status: **in progress**. Phase 1 (guards) ✅ shipped v0.1.0. Phase 2 (core) ✅ shipped v0.1.0. Phase 3 (sensei) and Phase 4 (legacy retire) pending.
 
 ## Motivation
 
@@ -81,9 +81,9 @@ A `dodojo` meta-package (this repo's existing manifest) will continue to install
 
 ## Rollout
 
-1. **Phase 1 (this PR)** — Extract `dodojo-guards` under `plugins/dodojo-guards/`. Update marketplace.json to expose two plugins. Existing `dodojo` plugin keeps guard hooks for compat (so users who don't reinstall don't lose protection).
-2. **Phase 2** — Extract `dodojo-core`. Rename telemetry dir `dodojo-dodojo` → `dodojo-core`. Add compat path.
-3. **Phase 3** — Extract `dodojo-sensei`. Remove guard hooks from `dodojo` manifest (`dodojo` becomes meta only).
-4. **Phase 4** — Deprecate the meta-package after 2-3 weeks of users on the split layout.
+1. **Phase 1** ✅ — Extracted `dodojo-guards` at `plugins/dodojo-guards/`. Marketplace exposes two plugins. Existing `dodojo` plugin keeps guard hooks for compat.
+2. **Phase 2** ✅ — Extracted `dodojo-core` at `plugins/dodojo-core/`. Telemetry dir name kept as `dodojo-dodojo` for now (rename to `dodojo-core` deferred to Phase 4 to avoid mid-split data move). Marketplace exposes three plugins.
+3. **Phase 3** — Extract `dodojo-sensei` at `plugins/dodojo-sensei/`. Move sensei skill + greet/telemetry hooks. Remove sensei from `dodojo` manifest.
+4. **Phase 4** — `dodojo` becomes a meta manifest that pulls in core + guards + sensei. Rename telemetry to `dodojo-core/`. Deprecate the meta-package after 2-3 weeks.
 
 Each phase is independently shippable + reversible.

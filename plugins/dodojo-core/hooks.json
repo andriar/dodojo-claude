@@ -1,0 +1,35 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/hooks/dodojo-greet.sh",  "timeout": 5000 },
+          { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/bin/log-session-start.sh", "timeout": 2000 },
+          { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/hooks/heartbeat-check.py", "timeout": 2000 },
+          { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/bin/greeter-lean.sh",       "timeout": 5000 }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/hooks/smart-context.py",  "timeout": 5000 },
+          { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/hooks/skill-suggest.py",  "timeout": 3000 },
+          { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/hooks/memory-trigger.py", "timeout": 3000 },
+          { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/hooks/model-route.py",    "timeout": 3000 }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/hooks/session-summary.py", "timeout": 5000 },
+          { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/bin/log-session-stop.sh",  "timeout": 5000 }
+        ]
+      }
+    ]
+  }
+}
