@@ -2,47 +2,54 @@
 # DoDojo statusline segment. Pure read, zero tokens, <50ms.
 # Outputs one line. Composable with other statusline scripts.
 #
-# Reads: ~/.claude/dodojo/state/audit-stack.json (written by `dj audit`)
-# Output: "dj 8.6K · 4 prunes"  or  "dj 8.6K ✓"  or empty if no state
+# Reads:  ~/.claude/dodojo/state/audit-stack.json (written by `dj audit`)
+#         ~/.claude/dodojo/telemetry/session-summary.jsonl (latest session tokens)
+#
+# Output (default "clear" mode):
+#   🪙 7.5K passive · ↑64K session · 2🪓 to prune
+#   🪙 7.5K passive · ✓ clean
+#
+# Compact mode (DJ_STATUSLINE_MODE=compact):
+#   dj 7.5K ↑64K · 2🪓
+#   dj 7.5K ✓
 #
 # ENV:
-#   DJ_STATUSLINE_NOCOLOR=1   disable ANSI colors
-#   DJ_STATUSLINE_PREFIX=...   override "dj" prefix (e.g. "🥷")
+#   DJ_STATUSLINE_MODE=clear|compact   default: clear
+#   DJ_STATUSLINE_NOCOLOR=1            disable ANSI colors
+#   DJ_STATUSLINE_NOICONS=1            plain text fallbacks
 
 set -u
 
 STATE="$HOME/.claude/dodojo/state/audit-stack.json"
-PREFIX="${DJ_STATUSLINE_PREFIX:-dj}"
+MODE="${DJ_STATUSLINE_MODE:-clear}"
+NOCOLOR="${DJ_STATUSLINE_NOCOLOR:-0}"
+NOICONS="${DJ_STATUSLINE_NOICONS:-0}"
 
-# Drain Claude Code's JSON payload from stdin (we don't currently use it)
+# Drain Claude Code's JSON payload (unused for now)
 [[ -t 0 ]] || cat >/dev/null
 
 if [[ ! -f "$STATE" ]]; then
   exit 0
 fi
 
-# Parse state file
-read -r TOTAL PRUNES SESS_TOKENS < <(
+# Parse state + latest session summary
+read -r PASSIVE PRUNES SESS_TOKENS < <(
   python3 - <<'PY' "$STATE" "$HOME/.claude/dodojo/telemetry/session-summary.jsonl"
 import json, sys, os
-state_path = sys.argv[1]
-summary_path = sys.argv[2]
 try:
-    s = json.load(open(state_path))
-    total = s.get('total_passive_tokens', 0)
+    s = json.load(open(sys.argv[1]))
+    passive = s.get('total_passive_tokens', 0)
     prunes = s.get('prune_candidates', 0)
 except Exception:
-    total, prunes = 0, 0
+    passive, prunes = 0, 0
 
-# Latest session token cost
 sess_total = 0
 try:
-    if os.path.exists(summary_path):
+    if os.path.exists(sys.argv[2]):
         last_line = None
-        with open(summary_path) as f:
-            for line in f:
-                if line.strip():
-                    last_line = line
+        for line in open(sys.argv[2]):
+            if line.strip():
+                last_line = line
         if last_line:
             d = json.loads(last_line)
             t = d.get('tokens', {})
@@ -51,11 +58,10 @@ try:
 except Exception:
     pass
 
-print(total, prunes, sess_total)
+print(passive, prunes, sess_total)
 PY
 )
 
-# Format token count compactly: 8600 → 8.6K, 12000 → 12K, 1500000 → 1.5M
 fmt() {
   local n="$1"
   if (( n >= 1000000 )); then
@@ -67,35 +73,58 @@ fmt() {
   fi
 }
 
-# Color thresholds for passive load
+if [[ "$NOCOLOR" == "1" ]]; then
+  G=""; Y=""; R=""; DIM=""; RESET=""
+else
+  G=$'\033[32m'; Y=$'\033[33m'; R=$'\033[31m'
+  DIM=$'\033[2m'; RESET=$'\033[0m'
+fi
+
 color_for() {
   local t="$1"
-  if [[ "${DJ_STATUSLINE_NOCOLOR:-0}" == "1" ]]; then echo ""; return; fi
-  if   (( t < 8000 ));  then echo $'\033[32m'   # green
-  elif (( t < 12000 )); then echo $'\033[33m'   # yellow
-  else                       echo $'\033[31m'   # red
+  if   (( t < 8000 ));  then printf '%s' "$G"
+  elif (( t < 12000 )); then printf '%s' "$Y"
+  else                       printf '%s' "$R"
   fi
 }
-RESET=$'\033[0m'
-DIM=$'\033[2m'
 
-C=$(color_for "$TOTAL")
-PASSIVE_FMT=$(fmt "$TOTAL")
-
-# Build segment
-SEG="${PREFIX} ${C}${PASSIVE_FMT}${RESET}"
-
-# Add session-cost if available (cumulative this conversation)
-if (( SESS_TOKENS > 0 )); then
-  SESS_FMT=$(fmt "$SESS_TOKENS")
-  SEG="${SEG} ${DIM}↑${SESS_FMT}${RESET}"
-fi
-
-# Alert if prunes available
-if (( PRUNES > 0 )); then
-  SEG="${SEG} ${DIM}·${RESET} ${PRUNES}🪓"
+if [[ "$NOICONS" == "1" ]]; then
+  COIN="\$"; AXE="x"; CHECK="ok"; UP="^"
 else
-  SEG="${SEG} ✓"
+  COIN="🪙"; AXE="🪓"; CHECK="✓"; UP="↑"
 fi
+
+PASSIVE_FMT=$(fmt "$PASSIVE")
+PASSIVE_C=$(color_for "$PASSIVE")
+
+case "$MODE" in
+  compact)
+    SEG="dj ${PASSIVE_C}${PASSIVE_FMT}${RESET}"
+    if (( SESS_TOKENS > 0 )); then
+      SEG="${SEG} ${DIM}${UP}$(fmt $SESS_TOKENS)${RESET}"
+    fi
+    if (( PRUNES > 0 )); then
+      SEG="${SEG} ${DIM}·${RESET} ${PRUNES}${AXE}"
+    else
+      SEG="${SEG} ${G}${CHECK}${RESET}"
+    fi
+    ;;
+
+  clear|*)
+    SEG="${COIN} ${PASSIVE_C}${PASSIVE_FMT}${RESET} ${DIM}passive${RESET}"
+
+    if (( SESS_TOKENS > 0 )); then
+      SEG="${SEG} ${DIM}·${RESET} ${UP}$(fmt $SESS_TOKENS) ${DIM}session${RESET}"
+    fi
+
+    if (( PRUNES > 0 )); then
+      noun="prune"
+      (( PRUNES > 1 )) && noun="prunes"
+      SEG="${SEG} ${DIM}·${RESET} ${Y}${PRUNES}${AXE}${RESET} ${DIM}to ${noun}${RESET}"
+    else
+      SEG="${SEG} ${DIM}·${RESET} ${G}${CHECK} clean${RESET}"
+    fi
+    ;;
+esac
 
 printf "%s" "$SEG"

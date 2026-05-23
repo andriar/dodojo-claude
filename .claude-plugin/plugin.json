@@ -1,7 +1,7 @@
 {
   "name": "dodojo",
   "description": "The plugin that audits your plugins. Free until you ask. Zero-token CLI (`dj`) for stack audit, prune, statusline. Skills are escalation-only.",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "author": {
     "name": "Andri",
     "url": "https://github.com/andriar"

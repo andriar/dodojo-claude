@@ -4,6 +4,27 @@ All notable changes documented here. Format follows [Keep a Changelog](https://k
 
 ## [Unreleased]
 
+## [0.4.2] - 2026-05-23
+
+### Changed
+
+- **`bin/statusline.sh` — clearer default rendering.** The bar now shows labeled output by default:
+  ```
+  🪙 7.5K passive · ↑64K session · 2🪓 to prune
+  🪙 7.5K passive · ✓ clean
+  ```
+  Previously the segments were unlabeled (`dj 7.5K ↑64K · 2🪓`) and required the user to know what each number meant. The new default explains itself.
+
+### Added
+
+- **`DJ_STATUSLINE_MODE=compact`** — opt-in short form for narrow terminals:
+  ```
+  dj 7.5K ↑64K · 2🪓
+  dj 7.5K ✓
+  ```
+- **`DJ_STATUSLINE_NOICONS=1`** — text fallbacks (`$`, `x`, `^`, `ok`) for terminals without emoji rendering
+- **Clean-state indicator** — when `prune_candidates == 0`, statusline shows `✓ clean` instead of `0🪓` — meaningful absence instead of meaningless zero
+
 ## [0.4.1] - 2026-05-23
 
 ### Added
