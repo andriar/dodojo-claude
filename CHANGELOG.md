@@ -4,6 +4,17 @@ All notable changes documented here. Format follows [Keep a Changelog](https://k
 
 ## [Unreleased]
 
+### Added
+- **`lib/paths.py`** — canonical path helper that separates user-owned data (`~/.claude/memory/`, themes, alerts) from plugin telemetry (`~/.claude/plugins/data/dodojo-dodojo/sessions/`, `…/hooks/`). Override via `DODOJO_TELEMETRY_HOME`.
+- **`scripts/migrate-telemetry.sh`** — one-shot copy/move of historical `sessions/*.jsonl` and known plugin hook logs from `~/.claude/` to `plugins/data/dodojo-dodojo/`. Safe (copy by default), `--move` to relocate, `--dry-run` to preview.
+- **`bin/profile-hooks.sh`** + **`dj profile-hooks`** — time each registered hook with a synthetic payload. Surfaces SessionStart cold-start budget.
+- **`DODOJO_SKIP_HEARTBEAT=1`** env opt-out for the heartbeat hook.
+- **`DODOJO_POKEMON_XP_QUEUE`** env var — explicit path to the pokemon-buddy XP queue. Most explicit way to wire the bridge; takes precedence over `POKEMON_BUDDY_HOME`.
+
+### Changed
+- **Namespace migration with compat shim.** Writers (`session-summary.py`, `smart-context.py`) now write to `plugins/data/dodojo-dodojo/{sessions,hooks}/`. Readers (`dodojo-greet.py`, `heartbeat-check.py`) merge both the new canonical location and the legacy `~/.claude/{sessions,hooks}/` location so historical data is not lost. No env-var changes required.
+- **Pokemon-buddy XP bridge is opt-in.** `session-summary.py` no longer falls back to `~/.claude/` when pokemon-buddy is not installed — it requires either `DODOJO_POKEMON_XP_QUEUE` or a sentinel `buddy-pokemon.md` file under a known candidate dir. Previously, the bridge wrote `buddy-xp-pending.jsonl` to a ghost location when buddy was uninstalled. Bypass entirely with `DODOJO_SKIP_BUDDY_XP=1`.
+
 ## [0.4.4] - 2026-05-23
 
 ### Added

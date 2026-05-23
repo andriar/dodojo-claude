@@ -19,12 +19,21 @@ from pathlib import Path
 
 HOME = Path.home()
 DODOJO_DATA = Path(os.environ.get("DODOJO_DATA") or str(HOME / ".claude"))
-SESSIONS = DODOJO_DATA / "sessions"
 PROJECTS = DODOJO_DATA / "projects"
 ALERTS = DODOJO_DATA / "alerts.jsonl"
 
+# Compat shim: read sessions/ from both canonical (plugins/data/) and legacy
+# (~/.claude/sessions/) locations.
+try:
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "lib"))
+    from paths import sessions_dirs_read  # type: ignore
+    SESSIONS_DIRS = sessions_dirs_read()
+except ImportError:
+    SESSIONS_DIRS = [DODOJO_DATA / "sessions"]
+
 STALE_HOURS = float(os.environ.get("DODOJO_HEARTBEAT_STALE_HOURS", "12"))
 ALERT_SOURCE = "heartbeat"
+DISABLED = os.environ.get("DODOJO_SKIP_HEARTBEAT", "0") == "1"
 
 
 def _latest_mtime(root: Path, glob: str) -> float:
@@ -67,7 +76,10 @@ def main() -> int:
     except OSError:
         pass
 
-    sessions_mt = _latest_mtime(SESSIONS, "*.jsonl")
+    if DISABLED:
+        return 0
+
+    sessions_mt = max((_latest_mtime(d, "*.jsonl") for d in SESSIONS_DIRS), default=0.0)
     transcripts_mt = _latest_mtime(PROJECTS, "**/*.jsonl")
 
     if transcripts_mt == 0:

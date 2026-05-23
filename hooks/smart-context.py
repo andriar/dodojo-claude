@@ -247,7 +247,12 @@ def log_telemetry(
 ) -> None:
     import hashlib
     import time
-    log_path = DODOJO_DATA / "hooks" / "smart-context.log"
+    try:
+        from paths import hook_log_write  # type: ignore
+        log_path = hook_log_write("smart-context.log")
+    except ImportError:
+        log_path = DODOJO_DATA / "hooks" / "smart-context.log"
+    log_path.parent.mkdir(parents=True, exist_ok=True)
     record = {
         "v": 2,
         "ts": int(time.time()),

@@ -58,19 +58,23 @@ if n:
       echo "No session data yet."
     fi
     ;;
+  profile-hooks)
+    bash "$DJ_DIR/profile-hooks.sh" "$@"
+    ;;
   help|--help|-h|"")
     cat <<EOF
 dj — DoDojo CLI (zero-token ops)
 
 USAGE:
-  dj audit       Run stack audit, write report
-  dj prune       Interactive cleanup of prune candidates
-  dj prune --dry-run    Preview what would be deleted
-  dj prune -y    Auto-confirm all (use with care)
-  dj report      Open latest report in \$EDITOR (or cat)
-  dj stats       Show telemetry file sizes
-  dj sessions    Show per-session token cost (real data)
-  dj help        This message
+  dj audit          Run stack audit, write report
+  dj prune          Interactive cleanup of prune candidates
+  dj prune --dry-run     Preview what would be deleted
+  dj prune -y       Auto-confirm all (use with care)
+  dj report         Open latest report in \$EDITOR (or cat)
+  dj stats          Show telemetry file sizes
+  dj sessions       Show per-session token cost (real data)
+  dj profile-hooks  Time each registered hook with a synthetic payload
+  dj help           This message
 
 All commands run as shell/Python scripts. No Claude tokens consumed.
 Reports: ~/.claude/dodojo/reports/
