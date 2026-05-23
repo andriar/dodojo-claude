@@ -1,0 +1,14 @@
+# Sensei exclusion patterns (one per line, regex)
+# Files/paths Sensei must never read or include in scoring.
+\.env
+\.env\.
+credentials?
+secrets?
+private[_-]?key
+\.pem$
+\.key$
+vaultwarden
+\.gnupg
+\.ssh/(id_|.*\.key)
+buddy-auth\.json
+\.credentials\.json

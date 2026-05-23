@@ -1,6 +1,6 @@
 # Plugin split plan
 
-Status: **in progress**. Phase 1 (guards) ✅ shipped v0.1.0. Phase 2 (core) ✅ shipped v0.1.0. Phase 3 (sensei) and Phase 4 (legacy retire) pending.
+Status: **in progress**. Phase 1 (guards) ✅, Phase 2 (core) ✅, Phase 3 (sensei) ✅ — all three split plugins shipped at v0.1.0. Phase 4 (legacy retire + telemetry dir rename) pending.
 
 ## Motivation
 
@@ -83,7 +83,7 @@ A `dodojo` meta-package (this repo's existing manifest) will continue to install
 
 1. **Phase 1** ✅ — Extracted `dodojo-guards` at `plugins/dodojo-guards/`. Marketplace exposes two plugins. Existing `dodojo` plugin keeps guard hooks for compat.
 2. **Phase 2** ✅ — Extracted `dodojo-core` at `plugins/dodojo-core/`. Telemetry dir name kept as `dodojo-dodojo` for now (rename to `dodojo-core` deferred to Phase 4 to avoid mid-split data move). Marketplace exposes three plugins.
-3. **Phase 3** — Extract `dodojo-sensei` at `plugins/dodojo-sensei/`. Move sensei skill + greet/telemetry hooks. Remove sensei from `dodojo` manifest.
+3. **Phase 3** ✅ — Extracted `dodojo-sensei` at `plugins/dodojo-sensei/`. Bundles `sensei-greet.sh` (registered as SessionStart hook), sensei skill, and `/dodojo:sensei` command. The `sensei-telemetry.sh` Stop hook and `sensei-2week-report.sh` systemd unit remain user-installed (require manual settings.json / systemd wiring).
 4. **Phase 4** — `dodojo` becomes a meta manifest that pulls in core + guards + sensei. Rename telemetry to `dodojo-core/`. Deprecate the meta-package after 2-3 weeks.
 
 Each phase is independently shippable + reversible.

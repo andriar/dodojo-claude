@@ -4,6 +4,10 @@ All notable changes documented here. Format follows [Keep a Changelog](https://k
 
 ## [Unreleased]
 
+### Added — plugin split Phase 3
+- **`dodojo-sensei` (new plugin, v0.1.0)** at `plugins/dodojo-sensei/`. Bundles the `sensei` skill, `sensei-greet.sh` SessionStart hook, and `/dodojo:sensei` command. `sensei-telemetry.sh` (Stop hook) and `sensei-2week-report.sh` (systemd one-shot) remain user-installed because they require manual wiring outside the plugin manifest. Pairs with `dodojo-core` — Sensei reads telemetry, recommends ROI automations.
+- Marketplace now exposes four plugins: legacy `dodojo` + the three-way split (`dodojo-core`, `dodojo-guards`, `dodojo-sensei`).
+
 ### Added — plugin split Phase 2
 - **`dodojo-core` (new plugin, v0.1.0)** at `plugins/dodojo-core/`. Full mirror of the current dodojo functionality minus guards (already split as `dodojo-guards`) and sensei (Phase 3). Contains: greeter, heartbeat, session telemetry, smart-context, skill-suggest, model-route, memory-trigger hooks; `dj` CLI; 11 maintenance skills (audit-context, archive-orphans, memory-curator, surgical-edit, recall, hook-health, route-tune, companions, new-skill, pr-describe, repro-this); 11 commands. Installable separately via `/plugin install dodojo-core@dodojo`.
 - Marketplace now exposes three plugins. Existing `dodojo` plugin remains functional during transition.
