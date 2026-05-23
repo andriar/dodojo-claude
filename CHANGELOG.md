@@ -4,6 +4,27 @@ All notable changes documented here. Format follows [Keep a Changelog](https://k
 
 ## [Unreleased]
 
+## [0.4.3] - 2026-05-23
+
+### Fixed — race condition between greeter and refresh
+
+**Bug**: `greeter-lean.sh` read state from disk before the backgrounded
+`refresh-audit.sh` finished writing it. Greeter consistently showed stale
+data from the previous session.
+
+**Fix**: greeter now refreshes state inline (synchronously) when stale,
+then reads. Smart caching avoids the cost when state is recent:
+
+- State < 5 min old → reuse (24ms total)
+- State stale or missing → run audit synchronously (93ms total)
+
+### Changed
+
+- Removed `refresh-audit.sh` from `hooks.json` SessionStart — greeter handles
+  refresh now. (Script file kept in `bin/` for users who still reference it
+  in their own settings.)
+- Greeter hook timeout raised 2000ms → 5000ms to accommodate inline audit.
+
 ## [0.4.2] - 2026-05-23
 
 ### Changed

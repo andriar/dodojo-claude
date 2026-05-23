@@ -21,13 +21,8 @@
           },
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/bin/refresh-audit.sh",
-            "timeout": 2000
-          },
-          {
-            "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/bin/greeter-lean.sh",
-            "timeout": 2000
+            "timeout": 5000
           }
         ]
       }
