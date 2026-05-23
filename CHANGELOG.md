@@ -4,6 +4,10 @@ All notable changes documented here. Format follows [Keep a Changelog](https://k
 
 ## [Unreleased]
 
+### Added — plugin split Phase 2
+- **`dodojo-core` (new plugin, v0.1.0)** at `plugins/dodojo-core/`. Full mirror of the current dodojo functionality minus guards (already split as `dodojo-guards`) and sensei (Phase 3). Contains: greeter, heartbeat, session telemetry, smart-context, skill-suggest, model-route, memory-trigger hooks; `dj` CLI; 11 maintenance skills (audit-context, archive-orphans, memory-curator, surgical-edit, recall, hook-health, route-tune, companions, new-skill, pr-describe, repro-this); 11 commands. Installable separately via `/plugin install dodojo-core@dodojo`.
+- Marketplace now exposes three plugins. Existing `dodojo` plugin remains functional during transition.
+
 ### Added — plugin split Phase 1
 - **`dodojo-guards` (new plugin, v0.1.0)** — standalone safety blockers: `secret-guard`, `force-push-guard`, `cost-guard`, plus `inject-git-context`. Zero telemetry, zero skill descriptions, zero shared state. Installable separately via `/plugin install dodojo-guards@dodojo`. Lives at `plugins/dodojo-guards/` in this monorepo.
 - **`docs/architecture/plugin-split-plan.md`** — target three-plugin architecture: `dodojo-core`, `dodojo-sensei`, `dodojo-guards`. Rollout in phases; Phase 1 (guards) ships here. Cross-plugin contract = `DODOJO_TELEMETRY_HOME` env var (from v0.4.5).
