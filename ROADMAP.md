@@ -48,6 +48,10 @@ Beyond single-author. Optional.
 - [ ] Cross-machine sync via dotfiles
 - [ ] Plugin marketplace listing on official Claude Code registry
 - [ ] First external contributor PR merged
+- [ ] **Sensei conversation eval** — extend Sensei to mine chat transcripts (not just zsh / git / claude-mem timeline). Detect anti-patterns mid-session (scope creep, validation gap, build-first-validate-later), output post-session digest with "readiness verdict" pre-execution. Closes the Kagami (records) → Sensei (judges) loop.
+- [ ] **Persona role discipline** — codify Kagami (mirror) vs Sensei (advisor) vs plain Claude (doer) role boundaries in skill manifests + auto-load memory. Add anti-bleed rule: a persona must not smuggle other-role output (e.g. Kagami delivering an advisor "blessing"). Today the split lives only as a loose memory note; promote to enforced spec.
+
+> Origin note: both items surfaced from a Warungku module-revamp session on 2026-05-08 where Kagami output a Sensei-style readiness verdict ("you're ready, go validate") without the conversation-eval data backing it. Captures the architectural intent already documented in `~/.claude/CLAUDE.md` ("Kagami is the fact-keeper, Sensei is the action-advisor") into shippable plugin features.
 
 ---
 
@@ -57,7 +61,7 @@ Beyond single-author. Optional.
 |-----------|------|-------|---|
 | M1 — Feature complete | 6 | 7 | **86%** |
 | M2 — Shareable v1.0 | 9 | 11 | **82%** |
-| M3 — Mature ecosystem | 0 | 6 | **0%** |
+| M3 — Mature ecosystem | 0 | 8 | **0%** |
 | **Overall to v1.0 (M1+M2)** | 15 | 18 | **83%** |
 
 **M2 ready to ship.** Remaining: 3 external users + contrib guide (can happen post-launch).
