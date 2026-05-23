@@ -4,6 +4,8 @@ All notable changes documented here. Format follows [Keep a Changelog](https://k
 
 ## [Unreleased]
 
+## [0.4.4] - 2026-05-23
+
 ### Added
 - **Heartbeat alert** (`hooks/heartbeat-check.py`, SessionStart). Detects silent Stop-hook outage by comparing latest `sessions/*.jsonl` mtime vs latest `projects/**/*.jsonl` mtime. Writes one warn-level entry to `alerts.jsonl` per outage window (idempotent). Threshold via `DODOJO_HEARTBEAT_STALE_HOURS` (default 12).
 - **Cache GC** (`scripts/cache-gc.sh`). Dry-run by default, `--apply` to delete. Keeps `KEEP` newest semver versions in `~/.claude/plugins/cache/dodojo/dodojo/`.
