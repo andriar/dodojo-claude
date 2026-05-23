@@ -42,6 +42,17 @@
       },
       "version": "0.1.0",
       "category": "productivity"
+    },
+    {
+      "name": "dodojo-sensei",
+      "description": "Meta-organizer that mines work patterns and recommends top-ROI automations. Pairs with dodojo-core (telemetry source).",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/andriar/dodojo-claude.git",
+        "path": "plugins/dodojo-sensei"
+      },
+      "version": "0.1.0",
+      "category": "productivity"
     }
   ]
 }

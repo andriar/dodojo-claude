@@ -1,0 +1,12 @@
+{
+  "disabled": [
+    "shell-command"
+  ],
+  "_log": [
+    {
+      "kind": "shell-command",
+      "disabled_at": "2026-05-02T02:56:52",
+      "reason": "3 rejections"
+    }
+  ]
+}
