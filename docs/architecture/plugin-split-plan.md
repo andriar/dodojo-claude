@@ -1,6 +1,6 @@
 # Plugin split plan
 
-Status: **in progress**. Phase 1 (guards) ✅, Phase 2 (core) ✅, Phase 3 (sensei) ✅ — all three split plugins shipped at v0.1.0. Phase 4 (legacy retire + telemetry dir rename) pending.
+Status: **complete**. Phase 1 (guards) ✅, Phase 2 (core) ✅, Phase 3 (sensei) ✅, Phase 4 (legacy retire + telemetry rename) ✅. Legacy `dodojo` bumped to v0.5.0 with empty `hooks.json` — deprecated meta-only. Telemetry default migrated to `plugins/data/dodojo-core/` with read-compat for `dodojo-dodojo/` and `~/.claude/sessions/`. Repo-root duplicate files retained for one more grace cycle (removal in a future PR after telemetry confirms no v0.4.x installs are still active).
 
 ## Motivation
 
@@ -84,6 +84,6 @@ A `dodojo` meta-package (this repo's existing manifest) will continue to install
 1. **Phase 1** ✅ — Extracted `dodojo-guards` at `plugins/dodojo-guards/`. Marketplace exposes two plugins. Existing `dodojo` plugin keeps guard hooks for compat.
 2. **Phase 2** ✅ — Extracted `dodojo-core` at `plugins/dodojo-core/`. Telemetry dir name kept as `dodojo-dodojo` for now (rename to `dodojo-core` deferred to Phase 4 to avoid mid-split data move). Marketplace exposes three plugins.
 3. **Phase 3** ✅ — Extracted `dodojo-sensei` at `plugins/dodojo-sensei/`. Bundles `sensei-greet.sh` (registered as SessionStart hook), sensei skill, and `/dodojo:sensei` command. The `sensei-telemetry.sh` Stop hook and `sensei-2week-report.sh` systemd unit remain user-installed (require manual settings.json / systemd wiring).
-4. **Phase 4** — `dodojo` becomes a meta manifest that pulls in core + guards + sensei. Rename telemetry to `dodojo-core/`. Deprecate the meta-package after 2-3 weeks.
+4. **Phase 4** ✅ — Legacy `dodojo` bumped to v0.5.0 with empty `hooks.json` and a deprecation banner in README. Marketplace `metadata.version` bumped to 0.5.0. `DODOJO_TELEMETRY_HOME` default migrated to `plugins/data/dodojo-core/`; readers fall back to `dodojo-dodojo/` and `~/.claude/sessions,hooks/`. `scripts/migrate-telemetry.sh` extended to cover the dir rename. Repo-root duplicate files (`hooks/`, `bin/`, `lib/`, `skills/`, `commands/`) retained — they're inert under the legacy plugin (empty hooks.json) but kept on disk so anyone who pinned a pre-Phase-4 commit can still operate.
 
 Each phase is independently shippable + reversible.

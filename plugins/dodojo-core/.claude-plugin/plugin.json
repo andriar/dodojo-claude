@@ -1,7 +1,7 @@
 {
   "name": "dodojo-core",
-  "description": "DoDojo core — zero-token `dj` CLI for plugin stack audit + prune, session telemetry, greeter, heartbeat alerts, and maintenance skills (memory curator, surgical-edit, recall, etc). Companion plugins: dodojo-guards (safety blockers), dodojo-sensei (ROI advisor).",
-  "version": "0.1.0",
+  "description": "DoDojo core \u2014 zero-token `dj` CLI for plugin stack audit + prune, session telemetry, greeter, heartbeat alerts, and maintenance skills (memory curator, surgical-edit, recall, etc). Companion plugins: dodojo-guards (safety blockers), dodojo-sensei (ROI advisor).",
+  "version": "0.5.0",
   "author": {
     "name": "Andri",
     "url": "https://github.com/andriar"
