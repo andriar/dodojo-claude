@@ -1,24 +1,24 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "dodojo",
-  "description": "Quiet tools for AI-assisted dev \u2014 memory, coach, smart context, audit.",
+  "description": "The plugin that audits your plugins. Free until you ask. Zero-token CLI (dj) for stack audit, prune, statusline.",
   "owner": {
     "name": "Andri",
     "url": "https://github.com/andriar"
   },
   "metadata": {
-    "description": "Quiet tools for AI-assisted dev \u2014 memory, coach, smart context, audit.",
-    "version": "0.3.36"
+    "description": "The plugin that audits your plugins. Free until you ask. Zero-token CLI (dj) for stack audit, prune, statusline.",
+    "version": "0.4.0"
   },
   "plugins": [
     {
       "name": "dodojo",
-      "description": "Stop wasting your Claude Code tokens. Captures what matters (Mirror), surfaces patterns worth automating (Coach), prunes what's unused.",
+      "description": "Audits your Claude Code plugin stack for passive token cost. Zero-token `dj` CLI: audit, prune, statusline. Skills are escalation-only.",
       "source": {
         "source": "url",
         "url": "https://github.com/andriar/dodojo-claude.git"
       },
-      "version": "0.3.36",
+      "version": "0.4.0",
       "category": "productivity"
     }
   ]

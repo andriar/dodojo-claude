@@ -1,9 +1,20 @@
 ---
-description: Audit Claude Code context budget — token load, bloated files, orphan memories
+description: Audit plugin stack token cost — passive load per session, prune candidates, ranked report
 ---
 
 # /dodojo:audit
 
-Invoke the `audit-context` skill. Measures session token load (CLAUDE.md + @-refs + project MEMORY.md), flags bloated files, cross-references smart-context telemetry to surface orphan memories never matched.
+Run the **plugin stack auditor**. Zero Claude tokens — executes `${CLAUDE_PLUGIN_ROOT}/bin/audit-stack.py` and prints the result.
 
-Use when session feels heavy/slow or before pruning memory.
+Measures:
+- Base layer cost (CLAUDE.md, @-refs, INDEX.md)
+- Project layer cost (in-repo CLAUDE.md/MEMORY.md)
+- Per-plugin cost (skill descriptions in system reminder)
+- Cross-references `enabledPlugins` and skill-usage telemetry
+- Outputs prune candidates ranked by impact
+
+The report is written to `~/.claude/dodojo/reports/audit-stack-latest.md`.
+
+For the old **memory audit** (context budget, orphan memories), see `/dodojo:audit-memory`.
+
+Run from terminal directly: `dj audit`.
