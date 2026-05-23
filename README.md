@@ -1,122 +1,257 @@
 # DoDojo
 
-Quiet tools for AI-assisted dev. Memory, pattern coach, smart context, and audit — keeps your Claude Code workflow lean.
+**The plugin that audits your plugins.**
+*Free until you ask.*
 
-> Built for indie hackers tired of watching their tokens drain on Claude Code Max.
+A Claude Code plugin built on one rule: **scripts do the work, Claude is only invoked for judgment.** Most operations cost zero tokens. The few that need Claude tell you up front.
 
-![DoDojo greeter — pulse, memory health, route, buddy, XP, quick actions](docs/assets/image-1.png)
+---
 
-**[→ Watch 60-second demo](docs/demo.md)** · **[→ Understand DoDojo](docs/guides/mental-model.md)** · New? Start with [quickstart](docs/quickstart.md).
+## Why this exists
 
-## What it does
+Every Claude Code plugin you install loads its skill descriptions into your context — every single session, before you type a thing. Most users have no idea how much that costs.
 
-| Layer | Role | What it does |
-|-------|------|--------------|
-| **Mirror** (Kagami) | memory | Captures preferences, lessons, decisions across sessions — no more re-explaining |
-| **Coach** (Sensei) | pattern coach | Mines work patterns → ranks by ROI → recommends automations weekly *(opt-in, requires env setup — see below)* |
-| **Context** | smart retrieval | Injects only the memories relevant to your current prompt |
-| **Audit** | prune | Archives unused memories/skills so your stack stays lean |
-| **Route** | model picker | Classifies each prompt → suggests model + effort (haiku/sonnet/opus). Override rules at `~/.claude/memory/routing/` |
-| **Meter** | observability | Token-saved counter on every session start |
+Run `dj audit` on a typical stack and you'll see something like:
 
-## Why it exists
+```
+DoDojo Stack Audit · 9,186 passive tokens/session
+  base: 4,889  plugins: 2,857
+  prune candidates: 6
+```
 
-Your Claude Code config bloats over time. CLAUDE.md grows. Memory accumulates. Tokens drain. DoDojo provides discipline so your workflow stays sharp 6 months from now.
+That's **~$50/month on Opus** burned before any actual work. The leak compounds the more plugins you install. Worse — `"enabled": false` in your settings does **not** prevent skill descriptions from loading. Disabled plugins keep costing.
+
+DoDojo measures it, tells you what to prune, and stays out of your context while doing so.
+
+---
+
+## What you get
+
+### The `dj` CLI — zero-token ops
+
+```bash
+dj audit       # Stack audit. Writes a Markdown report. 0 tokens.
+dj prune       # Interactive cleanup with safety guards. 0 tokens.
+dj report      # Open latest report in $EDITOR.
+dj sessions    # Per-session token cost (parsed from transcript).
+dj stats       # Telemetry file sizes.
+dj help        # All commands.
+```
+
+All shell + Python scripts. They never touch your Claude context.
+
+### Always-visible statusline
+
+```
+dj 8.6K ↑2.1M · 4🪓
+```
+
+- `8.6K` — total passive load per session (green/yellow/red by threshold)
+- `↑2.1M` — cumulative tokens this conversation
+- `4🪓` — prune candidates available
+
+Reads from a JSON state file. Zero Claude tokens, every keystroke.
+
+### Auto-refresh telemetry
+
+Three lightweight hooks log session metadata + real token spend + skill invocations to local JSONL files. The audit reads from those files. No telemetry leaves your machine.
+
+### Skills (the escalation layer)
+
+When you actually want Claude's judgment — `memory-curator`, `recall`, `sensei`, `pr-describe`, `repro-this`, `archive-orphans`, `audit-context` — skills exist. **They cost tokens by design**, but only when you invoke them. Default state is silent.
+
+---
+
+## The big finding
+
+While auditing my own machine, I discovered:
+
+> **Six "disabled" plugins were still costing me 2,712 tokens per session.**
+
+Uninstalled them. Got the predicted savings to the token. Got back 212MB of disk. Most users don't know this is happening to them.
+
+`dj audit` will show you the same on your machine. `dj prune` will help you fix it — interactively, never automatically, with `rm -rf` paths shown before action.
+
+---
 
 ## Install
 
 ```bash
-# In Claude Code:
-/plugin marketplace add andriar/dodojo-claude
-/plugin install dodojo@dodojo
-```
-
-Or local development:
-```bash
-/plugin marketplace add /path/to/dodojo-claude
+# In Claude Code
+/plugin marketplace add andriar/DoDojo-claude
 /plugin install dodojo
+
+# Bootstrap the dj CLI on your PATH
+/dodojo:dj-install
 ```
 
-**→ [Quickstart](docs/quickstart.md)** — Install → ROI in 5 minutes. New? Start here.
-
-## Configure
-
-Run the setup wizard once after install:
+Then:
 
 ```bash
-# In Claude Code:
-/dodojo:init
-
-# Or headless / CI:
-bash ~/.claude/plugins/cache/dodojo/dodojo/<version>/scripts/dodojo-init.sh
+dj audit
 ```
 
-Both prompt for theme, icons, color, silent mode, and Coach (Sensei) paths — then write to `~/.claude/settings.json` `env` block. Same questions, same outcome.
+Optional — wire the statusline:
 
-Show current values: `bash .../dodojo-init.sh --print` · Reset: `--reset`.
+```jsonc
+// ~/.claude/settings.json
+"statusLine": {
+  "type": "command",
+  "command": "/home/<you>/.claude/plugins/cache/dodojo/dodojo/<version>/bin/statusline.sh"
+}
+```
 
-Manual env vars (override or skip the wizard):
+Or compose with another existing statusline (e.g. poke):
 
-| Var | Default | Purpose |
-|-----|---------|---------|
-| `DODOJO_DATA` | `~/.claude` | Where to read/write memory, sessions, logs |
-| `KAGAMI_THEME` | `default` | Greeter theme — see `kagami-theme.sh` for list |
-| `KAGAMI_ICONS` | `nerd` | `nerd` / `unicode` / `emoji` |
-| `KAGAMI_COLOR` | `0` | Set to `1` to enable ANSI colors in greeter |
-| `KAGAMI_SILENT` | `0` | Set to `1` to skip injecting greeter into Claude's context (~400 tokens/session). Greeter still renders to terminal. |
+```jsonc
+"statusLine": {
+  "type": "command",
+  "command": ".../bin/statusline-composed.sh"
+}
+```
 
-## Coach (Sensei) — opt-in
+---
 
-Sensei mines work patterns from shell history + git log → ranks by ROI → writes weekly markdown report.
+## How it stays cheap
 
-Easiest setup: `/dodojo:init` (or `scripts/dodojo-init.sh`) prompts to enable, then auto-detects an Obsidian vault. No Obsidian? Falls back to `~/.claude/dodojo/sensei/reports/`. Manual override via `~/.claude/settings.json` `env` block (`SENSEI_VAULT`, `SENSEI_REPOS` colon-separated, `SENSEI_HISTORY`).
+Three principles. Full breakdown in [`docs/lean-architecture.md`](docs/lean-architecture.md).
 
-Privacy: shell history scrape strips command args by default (cmd name only). Set `SENSEI_FULL_HISTORY=1` to keep full args.
+### 1. Scripts own data, Claude owns judgment
 
-State (weights, feedback, raw events) lives at `~/.claude/dodojo/sensei/` — user-local, never in plugin cache.
+Anything that's *pure analysis* (read files, count tokens, detect duplicates) is a Python or Bash script. Only the *fuzzy decisions* (is this memory still relevant? rewrite this tighter?) escalate to a skill.
 
-Full setup cascade + privacy modes: [docs/sensei.md](docs/sensei.md). Where DoDojo sits vs caveman + claude-mem: [docs/positioning.md](docs/positioning.md).
+Most plugins wrap every operation in a skill. We wrap none of the script-able ones.
 
-Trigger weekly report:
+### 2. Reports are artifacts, not conversations
+
+`dj audit` writes `~/.claude/dodojo/reports/audit-stack-latest.md`. You read it in your editor. You decide what to prune. Claude isn't in the loop.
+
+### 3. Statusline > daemons
+
+No background services. No web dashboard. The statusline reads a JSON state file refreshed by a SessionStart hook. Total passive cost: zero processes, zero tokens.
+
+---
+
+## Where this fits in the token-saver ecosystem
+
+DoDojo is *complementary*, not a replacement:
+
+| Tool | What it saves | Where it acts |
+|---|---|---|
+| [caveman](https://github.com/JuliusBrussee/caveman) | Output verbosity | Response compression |
+| [claude-mem](https://github.com/thedotmack/claude-mem) | History context | Session compaction |
+| **DoDojo** | **Plugin overhead + memory hygiene** | **Stack audit + lean ops** |
+
+Stack them. They don't conflict.
+
+---
+
+## Slash commands at a glance
+
+| Command | What it does | Cost |
+|---|---|---|
+| `/dodojo:audit` | Plugin stack audit (the lean one) | 0 tokens |
+| `/dodojo:prune` | Interactive plugin cleanup | 0 tokens |
+| `/dodojo:dj-install` | Bootstrap `dj` CLI on PATH | 0 tokens |
+| `/dodojo:audit-memory` | Memory/context audit (legacy, invokes skill) | tokens |
+| `/dodojo:prune-memory` | Orphan memory archival (legacy, invokes skill) | tokens |
+| `/dodojo:sensei` | Pattern-coach analysis | tokens |
+| `/dodojo:companions` | Companion file scan | tokens |
+| `/dodojo:health` | Skill+hook health check | tokens |
+
+For zero-token operations, prefer the `dj` CLI directly or the lean slash commands.
+
+---
+
+## What DoDojo is NOT
+
+Honest scope:
+
+- **Not a productivity gimmick.** No XP, no badges, no streaks.
+- **Not for teams.** Single-maintainer tool. No central server.
+- **Not magic.** Claude Code still loads memory eagerly. We help you keep what loads tight.
+- **Not a replacement for thinking.** It's a janitor, not a librarian.
+- **Not a silver bullet.** Saves ~30% passive cost on a typical stack. The rest is on you.
+
+---
+
+## File layout
+
+```
+plugin-root/
+├── bin/                       # zero-token CLI tools (NEW in v0.4)
+│   ├── dj                     # CLI entry
+│   ├── audit-stack.py         # plugin stack audit
+│   ├── prune.py               # interactive cleanup
+│   ├── statusline.sh          # always-visible cost
+│   ├── statusline-composed.sh # composable statusline
+│   ├── refresh-audit.sh       # SessionStart auto-refresh
+│   ├── log-session-start.sh   # telemetry
+│   └── log-session-stop.sh    # telemetry (token capture)
+├── skills/                    # Claude-judgment escalation layer
+├── hooks/                     # legacy hooks (greet, smart-context, etc.)
+├── commands/                  # slash command definitions
+├── scripts/                   # utility scripts (memory, install, sensei)
+└── docs/
+    └── lean-architecture.md   # design philosophy
+```
+
+User data (telemetry, reports, state) lives in `~/.claude/dodojo/` — survives plugin updates.
+
+---
+
+## Verifying the claims
+
+Reproducibility matters for a cost-focused tool. Anyone can verify:
+
 ```bash
-python3 ~/.claude/plugins/cache/dodojo/dodojo/<version>/skills/sensei/scripts/report.py
+# Snapshot your current passive load
+dj audit
+cat ~/.claude/dodojo/state/audit-stack.json
+
+# Uninstall a "disabled" plugin
+rm -rf ~/.claude/plugins/cache/<plugin>
+
+# Re-audit
+dj audit
+cat ~/.claude/dodojo/state/audit-stack.json
 ```
 
-Or invoke `/sensei` in Claude. Optional cron via `crontab -e`:
-```cron
-0 9 * * 1  python3 ~/.claude/plugins/cache/dodojo/dodojo/0.3.8/skills/sensei/scripts/report.py
-```
+The `total_passive_tokens` should drop by exactly the predicted amount. If it doesn't, file an issue.
 
-Optional integration with **claude-mem** plugin for session timeline mining (auto-skipped if absent).
+---
 
-## Companions (not bundled)
+## Roadmap
 
-DoDojo focuses on memory + audit. Pair with these for a full optimization stack:
+What's shipped (v0.4):
+- ✅ `dj audit` — stack token audit
+- ✅ `dj prune` — interactive cleanup
+- ✅ Statusline with always-visible passive cost
+- ✅ Session telemetry (sessions, summaries, skill usage)
+- ✅ Auto-refresh on SessionStart
 
-- **[claude-mem](https://github.com/thedotmack/claude-mem)** — auto-summarizes long sessions
-- **RTK** — trims shell command output (Rust-based proxy)
-- **[caveman](https://github.com/JuliusBrussee/caveman)** — compresses prompt/response style
-- **[pokemon-buddy](https://github.com/andriar/pokemon-buddy-claude)** — gamified XP system (companion plugin)
+What's next:
+- `dj memory` — INDEX.md auditor (find duplicates, expired entries) without invoking Claude
+- `dj benchmark` — measure DoDojo's own token cost vs comparable plugins, with receipts
+- `dj friday` — composes audit + memory + sensei into a Friday review ritual
 
-## Docs
+What's permanently *not* shipping:
+- Web dashboard (use the Markdown report)
+- Background daemons (stateless by design)
+- Auto-prune (you decide, every time)
 
-See [docs/README.md](docs/README.md) for hooks, commands, skills, release process.
-
-## Develop
-
-```bash
-uv venv .venv && uv pip install --python .venv pytest
-.venv/bin/python -m pytest tests/ -q
-```
-
-Release: `scripts/bump.sh <new-version>`.
-
-## Status
-
-Early development. Built for one developer's workflow first; sharing for those with similar pain.
-
-No support guarantees. Fork it, adapt it, break it.
+---
 
 ## License
 
-MIT
+MIT. See [LICENSE](LICENSE).
+
+---
+
+## A note on the design
+
+DoDojo started as a multi-feature meta-toolkit. It grew. Then I measured its own token cost and was embarrassed by what I found.
+
+This README is the v0.4 of the rebuilt project: **one focused job, done at zero passive cost.** Everything else is escalation.
+
+If you're paying for Claude Code and feeling the bill, run `dj audit`. If you have ideas for what `dj` should do next, open an issue — but be ready to defend why the answer isn't "just read the report yourself."

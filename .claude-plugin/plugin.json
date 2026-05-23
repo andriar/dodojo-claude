@@ -1,7 +1,7 @@
 {
   "name": "dodojo",
-  "description": "Quiet tools for AI-assisted dev. Memory, pattern coach, smart context, and audit \u2014 keeps your Claude Code workflow lean.",
-  "version": "0.3.36",
+  "description": "The plugin that audits your plugins. Free until you ask. Zero-token CLI (`dj`) for stack audit, prune, statusline. Skills are escalation-only.",
+  "version": "0.4.0",
   "author": {
     "name": "Andri",
     "url": "https://github.com/andriar"

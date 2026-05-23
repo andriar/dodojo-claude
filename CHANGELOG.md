@@ -4,6 +4,45 @@ All notable changes documented here. Format follows [Keep a Changelog](https://k
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-05-23
+
+### Added — Lean architecture pivot
+
+The plugin now leads with **scripts-first, skills-as-escalation**. New tagline: *Free until you ask.*
+
+- **`bin/dj` CLI** — single shell entrypoint for zero-token operations
+  - `dj audit` — plugin stack token audit
+  - `dj prune` — interactive plugin cleanup (`--dry-run`, `-y`, `q` to quit)
+  - `dj report` — open latest report in `$EDITOR`
+  - `dj sessions` — per-session token cost (parsed from transcript)
+  - `dj stats` — telemetry file sizes
+- **`bin/audit-stack.py`** — measures passive load per session: base layer (CLAUDE.md, @-refs, INDEX.md) + project layer + plugin layer (skill descriptions in system reminder). Cross-references `enabledPlugins` and skill-usage telemetry. Writes Markdown report to `~/.claude/dodojo/reports/`.
+- **`bin/prune.py`** — interactive plugin cleanup with safety guards. Defaults to No, shows full `rm -rf` path, warns on enabled plugins, supports dry-run.
+- **`bin/statusline.sh`** — always-visible passive cost in your status bar. Color-coded (green/yellow/red). Cumulative session tokens shown as `↑X.XM`. Reads from JSON state file; 0 tokens per render.
+- **`bin/statusline-composed.sh`** — composes dj segment with pokemon-buddy or any other statusline. Version-agnostic poke detection.
+- **`bin/refresh-audit.sh`** — SessionStart hook that backgrounds `dj audit` so the statusline always shows fresh numbers without blocking startup.
+- **`bin/log-session-start.sh`** + **`bin/log-session-stop.sh`** — local-only telemetry: session count (denominator), per-session token spend (input + output + cache read + cache write), tool/skill/plugin invocation counts.
+- **`/dodojo:dj-install` command** + `scripts/dj-install.sh` — bootstraps `dj` symlink to `~/.local/bin/dj`. Idempotent.
+- **`docs/lean-architecture.md`** — design philosophy: scripts own data, Claude owns judgment; reports are artifacts not conversations; statuslines > daemons.
+
+### Changed
+
+- **`/dodojo:audit`** — now invokes `bin/audit-stack.py` (zero tokens). The old skill-based memory audit is preserved as **`/dodojo:audit-memory`**.
+- **`/dodojo:prune`** — now invokes `bin/prune.py` (zero tokens, plugin cleanup). The old orphan-memory pruner is preserved as **`/dodojo:prune-memory`**.
+- **`hooks.json`** — adds 3 new entries under SessionStart and Stop for telemetry + audit refresh.
+- **`README.md`** — rewritten to lead with the lean positioning. Old README's feature taxonomy archived in git history.
+- **Plugin description** — updated in `plugin.json` and `marketplace.json` to reflect new positioning.
+
+### The big finding
+
+While auditing a typical stack, discovered that `"enabled": false` in `~/.claude/settings.json` does NOT prevent skill descriptions from loading into the system reminder. Disabled plugins still cost tokens per session. Removing one "disabled" plugin saved exactly the predicted passive tokens (587) and 198MB of disk on the test machine. Reproducibility steps in README.
+
+### Notes for upgraders
+
+- All existing skills (memory-curator, recall, sensei, archive-orphans, audit-context, etc.) remain unchanged and accessible.
+- Memory-focused commands are renamed with `-memory` suffix to make room for the new lean commands.
+- Run `/dodojo:dj-install` after upgrading to bootstrap the `dj` CLI on your PATH.
+
 ## [0.3.36] - 2026-05-13
 
 ### Changed

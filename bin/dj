@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+# dj — DoDojo CLI entry point. Zero-token operations.
+# Usage: dj <subcommand> [args]
+set -e
+
+DJ_DIR="$(cd "$(dirname "$0")" && pwd)"
+DJ_HOME="$HOME/.claude/dodojo"
+REPORTS="$DJ_HOME/reports"
+TELEMETRY="$DJ_HOME/telemetry"
+
+cmd="${1:-help}"
+shift || true
+
+case "$cmd" in
+  audit|audit-stack)
+    python3 "$DJ_DIR/audit-stack.py" "$@"
+    ;;
+  prune)
+    python3 "$DJ_DIR/prune.py" "$@"
+    ;;
+  report)
+    latest="$REPORTS/audit-stack-latest.md"
+    if [[ ! -f "$latest" ]]; then
+      echo "No report yet. Run: dj audit"
+      exit 1
+    fi
+    if [[ -n "${EDITOR:-}" ]]; then
+      "$EDITOR" "$latest"
+    else
+      cat "$latest"
+    fi
+    ;;
+  stats)
+    echo "=== telemetry files ==="
+    for f in "$TELEMETRY"/*.jsonl; do
+      [[ -f "$f" ]] && printf "%-40s %s entries\n" "$(basename "$f")" "$(wc -l < "$f")"
+    done
+    ;;
+  sessions)
+    if [[ -f "$TELEMETRY/session-summary.jsonl" ]]; then
+      python3 -c "
+import json, sys
+total = 0; n = 0
+for line in open('$TELEMETRY/session-summary.jsonl'):
+    if not line.strip(): continue
+    try:
+        d = json.loads(line)
+        t = d.get('tokens', {})
+        total_session = t.get('input',0)+t.get('output',0)+t.get('cache_read',0)+t.get('cache_write',0)
+        total += total_session
+        n += 1
+        print(f\"{d.get('ts','')[:19]}  {d.get('repo','?'):20s}  {d.get('prompts',0):3d} prompts  {total_session:>12,} tokens\")
+    except: pass
+if n:
+    print(f'\n{n} sessions, avg {total//n:,} tokens/session, total {total:,}')
+"
+    else
+      echo "No session data yet."
+    fi
+    ;;
+  help|--help|-h|"")
+    cat <<EOF
+dj — DoDojo CLI (zero-token ops)
+
+USAGE:
+  dj audit       Run stack audit, write report
+  dj prune       Interactive cleanup of prune candidates
+  dj prune --dry-run    Preview what would be deleted
+  dj prune -y    Auto-confirm all (use with care)
+  dj report      Open latest report in \$EDITOR (or cat)
+  dj stats       Show telemetry file sizes
+  dj sessions    Show per-session token cost (real data)
+  dj help        This message
+
+All commands run as shell/Python scripts. No Claude tokens consumed.
+Reports: ~/.claude/dodojo/reports/
+Telemetry: ~/.claude/dodojo/telemetry/
+EOF
+    ;;
+  *)
+    echo "Unknown command: $cmd"
+    echo "Run: dj help"
+    exit 1
+    ;;
+esac
