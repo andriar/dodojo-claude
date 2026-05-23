@@ -1,0 +1,11 @@
+{
+  "name": "dodojo-guards",
+  "description": "Assertive guard hooks for Claude Code — blocks secrets in Write/Edit, force-push to main, runaway Bash (find /, rm -rf $HOME), huge-file Reads without offset+limit. Zero skill load. Standalone — no telemetry, no greeter, no shared state with other dodojo plugins.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Andri",
+    "url": "https://github.com/andriar"
+  },
+  "homepage": "https://github.com/andriar/dodojo-claude/tree/main/plugins/dodojo-guards",
+  "repository": "https://github.com/andriar/dodojo-claude"
+}

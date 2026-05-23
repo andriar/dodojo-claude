@@ -20,6 +20,17 @@
       },
       "version": "0.4.5",
       "category": "productivity"
+    },
+    {
+      "name": "dodojo-guards",
+      "description": "Standalone assertive guards: secret-guard, force-push-guard, cost-guard. No telemetry, no skills loaded. Zero passive token cost.",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/andriar/dodojo-claude.git",
+        "path": "plugins/dodojo-guards"
+      },
+      "version": "0.1.0",
+      "category": "safety"
     }
   ]
 }
