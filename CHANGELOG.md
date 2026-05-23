@@ -4,6 +4,12 @@ All notable changes documented here. Format follows [Keep a Changelog](https://k
 
 ## [Unreleased]
 
+### Added — plugin split Phase 1
+- **`dodojo-guards` (new plugin, v0.1.0)** — standalone safety blockers: `secret-guard`, `force-push-guard`, `cost-guard`, plus `inject-git-context`. Zero telemetry, zero skill descriptions, zero shared state. Installable separately via `/plugin install dodojo-guards@dodojo`. Lives at `plugins/dodojo-guards/` in this monorepo.
+- **`docs/architecture/plugin-split-plan.md`** — target three-plugin architecture: `dodojo-core`, `dodojo-sensei`, `dodojo-guards`. Rollout in phases; Phase 1 (guards) ships here. Cross-plugin contract = `DODOJO_TELEMETRY_HOME` env var (from v0.4.5).
+
+The existing `dodojo` plugin keeps the same guard hooks during transition — users who only update the marketplace don't lose protection. Reinstall to swap to the standalone `dodojo-guards` when ready.
+
 ## [0.4.5] - 2026-05-23
 
 ### Added
