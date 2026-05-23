@@ -4,6 +4,16 @@ All notable changes documented here. Format follows [Keep a Changelog](https://k
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-05-23
+
+### Changed — plugin split Phase 4 (legacy retire + telemetry rename)
+- **`dodojo` plugin → v0.5.0, deprecated.** `hooks.json` is now empty (no hooks fire); manifest description carries a deprecation banner pointing users to the three-way split. Marketplace metadata bumped to 0.5.0. No data is lost — telemetry readers merge legacy locations.
+- **`DODOJO_TELEMETRY_HOME` default migrated**: `plugins/data/dodojo-dodojo/` → `plugins/data/dodojo-core/`. Readers (`dodojo-greet.py`, `heartbeat-check.py`) now check **three** locations in order: dodojo-core/ → dodojo-dodojo/ → `~/.claude/sessions,hooks/`. Writers always target dodojo-core/.
+- **`scripts/migrate-telemetry.sh`** extended with a second pass for `dodojo-dodojo/ → dodojo-core/`. Existing dry-run / `--move` flags unchanged.
+- **README** carries a Phase 4 deprecation banner; `docs/architecture/plugin-split-plan.md` marked complete.
+
+Repo-root duplicate files (`hooks/`, `bin/`, `lib/`, `skills/`, `commands/`) intentionally retained for one more grace cycle. They're inert under the deprecated `dodojo` plugin (empty hooks.json) but remain on disk so anyone who pinned a pre-Phase-4 commit can still operate. Removal scheduled for a follow-up PR after telemetry confirms no active v0.4.x installs remain.
+
 ### Added — plugin split Phase 3
 - **`dodojo-sensei` (new plugin, v0.1.0)** at `plugins/dodojo-sensei/`. Bundles the `sensei` skill, `sensei-greet.sh` SessionStart hook, and `/dodojo:sensei` command. `sensei-telemetry.sh` (Stop hook) and `sensei-2week-report.sh` (systemd one-shot) remain user-installed because they require manual wiring outside the plugin manifest. Pairs with `dodojo-core` — Sensei reads telemetry, recommends ROI automations.
 - Marketplace now exposes four plugins: legacy `dodojo` + the three-way split (`dodojo-core`, `dodojo-guards`, `dodojo-sensei`).
