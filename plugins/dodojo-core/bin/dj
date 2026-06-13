@@ -61,6 +61,9 @@ if n:
   profile-hooks)
     bash "$DJ_DIR/profile-hooks.sh" "$@"
     ;;
+  memory-graph|mg)
+    python3 "$DJ_DIR/../skills/memory-graph/memory_graph.py" "$@"
+    ;;
   help|--help|-h|"")
     cat <<EOF
 dj — DoDojo CLI (zero-token ops)
@@ -74,6 +77,7 @@ USAGE:
   dj stats          Show telemetry file sizes
   dj sessions       Show per-session token cost (real data)
   dj profile-hooks  Time each registered hook with a synthetic payload
+  dj mg <cmd>       memory-graph engine (report|semantic|retrieve|emit|run-graph|...)
   dj help           This message
 
 All commands run as shell/Python scripts. No Claude tokens consumed.

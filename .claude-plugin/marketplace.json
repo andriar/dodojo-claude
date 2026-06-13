@@ -8,7 +8,7 @@
   },
   "metadata": {
     "description": "Three-plugin set for Claude Code: dodojo-core (CLI + telemetry), dodojo-guards (safety blockers), dodojo-sensei (ROI advisor). Legacy `dodojo` retained as deprecated meta.",
-    "version": "0.5.0"
+    "version": "0.6.0"
   },
   "plugins": [
     {
@@ -18,7 +18,7 @@
         "source": "url",
         "url": "https://github.com/andriar/dodojo-claude.git"
       },
-      "version": "0.5.0",
+      "version": "0.6.0",
       "category": "productivity"
     },
     {
@@ -29,7 +29,7 @@
         "url": "https://github.com/andriar/dodojo-claude.git",
         "path": "plugins/dodojo-guards"
       },
-      "version": "0.5.0",
+      "version": "0.6.0",
       "category": "safety"
     },
     {
@@ -40,7 +40,7 @@
         "url": "https://github.com/andriar/dodojo-claude.git",
         "path": "plugins/dodojo-core"
       },
-      "version": "0.5.0",
+      "version": "0.6.0",
       "category": "productivity"
     },
     {
@@ -51,7 +51,7 @@
         "url": "https://github.com/andriar/dodojo-claude.git",
         "path": "plugins/dodojo-sensei"
       },
-      "version": "0.5.0",
+      "version": "0.6.0",
       "category": "productivity"
     }
   ]
