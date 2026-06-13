@@ -1,7 +1,7 @@
 {
   "name": "dodojo-sensei",
   "description": "DoDojo Sensei \u2014 meta-organizer that mines work patterns (zsh history + claude-mem timeline + git log) and recommends top-ROI automations weekly. Paired with dodojo-core (telemetry source). Sensei is the action-advisor; the core plugin is the fact-keeper.",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "author": {
     "name": "Andri",
     "url": "https://github.com/andriar"

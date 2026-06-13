@@ -1,7 +1,7 @@
 {
   "name": "dodojo",
   "description": "[DEPRECATED \u2014 install dodojo-core + dodojo-guards + dodojo-sensei instead] Legacy meta-package. Kept for backwards compatibility with existing installs. New installs: prefer the three-way split for blast-radius isolation.",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "author": {
     "name": "Andri",
     "url": "https://github.com/andriar"

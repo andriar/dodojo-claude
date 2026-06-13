@@ -4,6 +4,20 @@ All notable changes documented here. Format follows [Keep a Changelog](https://k
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-06-13
+
+### Added — memory-graph (dodojo-core) + multi-agent collaboration
+
+- **`memory-graph` skill** (`plugins/dodojo-core/skills/memory-graph/`) — turns the flat memory store into a maintained relation graph. Engine `memory_graph.py` (pure stdlib, also exposed as `dj mg <cmd>`):
+  - `report` / `resolve` — canonical `[[wikilink]]` resolution (kebab/snake/path-agnostic, matches stem | `id:` | slugified `name:`), rot + island + duplicate detection.
+  - `fix-rot`, `backlink`, `suggest`, `mermaid` — graph maintenance (all mutations need `--apply`).
+  - `semantic` / `semantic-dup` — Ollama embedding pass (`OLLAMA_HOST`, default `nomic-embed-text`) for paraphrase-level link/dedup; cached under `~/.claude/.cache/memory-graph/` (NOT the plugin dir), graceful keyword fallback when the daemon is down.
+- **memory-dedup-gate hook (default-ON, PreToolUse/Write)** — blocks creating a NEW memory file ≥0.35 similar to an existing one, advising an update instead. Opt out with `MEMGRAPH_GATE_DISABLED=1`. Fail-open if the engine is missing.
+- **Multi-agent layer** — `agent/scope/kind/from/run` frontmatter + `retrieve` (scoped semantic lens), `emit` (write a node with provenance + same-kind dedup-gate + embed-cache), `run-graph` (provenance DAG), `set-status`/`--supersede` (lifecycle). Collaboration happens *through the graph*, not inline prompt passing.
+- **Role agents** (`plugins/dodojo-core/agents/`): `pm`, `eng`, `qa`, `arbiter` + `DRIVER.md`. Each follows a retrieve→reason→emit→handoff contract via `dj mg`. Validated end-to-end (PM decision → ENG design → QA verdict → arbiter conflict resolution → supersede → accept).
+- Design spec: `plugins/dodojo-core/skills/memory-graph/MULTI_AGENT_DESIGN.md`.
+- **All plugins bumped 0.5.0 → 0.6.0** (lockstep).
+
 ## [0.5.0] - 2026-05-23
 
 ### Changed — plugin split Phase 4 (legacy retire + telemetry rename)
