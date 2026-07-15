@@ -23,7 +23,8 @@ STOP = set("the a an and or of to in on for with is are be this that it as by at
 
 
 def canon(s: str) -> str:
-    s = s.strip().rsplit('/', 1)[-1]
+    s = s.strip().split('|', 1)[0].split('#', 1)[0].strip()  # drop [[x|alias]] / [[x#anchor]]
+    s = s.rsplit('/', 1)[-1]                                  # drop [[dir/x]] path prefix
     if s.endswith('.md'):
         s = s[:-3]
     return re.sub(r'[\s_-]+', '-', s.lower()).strip('-')
@@ -35,8 +36,18 @@ def fm(txt, key):
 
 
 def load():
-    files = [p for p in ROOT.rglob('*.md')
-             if '_archive' not in p.parts and p.name not in ('INDEX.md', 'MEMORY.md')]
+    def _keep(p):
+        return '_archive' not in p.parts and p.name not in ('INDEX.md', 'MEMORY.md')
+    files = [p for p in ROOT.rglob('*.md') if _keep(p)]
+    # rglob does NOT descend symlinked dirs (e.g. memory/_project -> project memory);
+    # scan them explicitly so cross-vault [[links]] resolve instead of showing as rot.
+    seen = {p.resolve() for p in files}
+    for d in ROOT.iterdir():
+        if d.is_symlink() and d.is_dir():
+            for p in d.rglob('*.md'):
+                if _keep(p) and p.resolve() not in seen:
+                    seen.add(p.resolve())
+                    files.append(p)
     docs = {}
     for p in files:
         txt = p.read_text()
