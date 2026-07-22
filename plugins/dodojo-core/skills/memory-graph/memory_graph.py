@@ -366,12 +366,26 @@ def node_meta(d):
             'kind': fm(txt, 'kind') or 'knowledge'}
 
 
+def squad_of(name):
+    """Squad an agent belongs to = the prefix before the first '-'. `app-frontend` -> `app`.
+    Agents without a dash (pm, eng, qa, arbiter) have no squad (returns the full name)."""
+    return name.split('-', 1)[0] if name and '-' in name else name
+
+
 def visible(docs, role, shared_only=False):
-    """Nodes an agent may retrieve: scope==shared OR owned by role. Excludes others' private."""
+    """Nodes an agent may retrieve:
+      - scope==shared          -> visible to everyone (cross-squad common facts)
+      - scope==squad:<name>    -> visible only to agents whose squad matches (+ the owner)
+      - scope==private         -> visible only to the owner
+    Excludes others' private and other squads' squad-scoped nodes."""
+    role_squad = squad_of(role)
     out = []
     for p, d in docs.items():
         m = node_meta(d)
-        if m['scope'] == 'private' and m['agent'] != role:
+        sc = m['scope']
+        if sc == 'private' and m['agent'] != role:
+            continue
+        if sc.startswith('squad:') and sc.split(':', 1)[1] != role_squad and m['agent'] != role:
             continue
         if shared_only and m['agent'] == role and m['scope'] != 'shared':
             continue
@@ -451,7 +465,7 @@ def cmd_emit(docs, index, args):
     froms = [f.strip() for f in (args.from_nodes or '').split(',') if f.strip()]
     run = args.run or f"run_{__import__('datetime').datetime.now():%Y%m%d_%H%M%S}"
     today = __import__('datetime').date.today().isoformat()
-    fms = [f"agent: {args.agent}", "scope: shared", f"kind: {args.kind}",
+    fms = [f"agent: {args.agent}", f"scope: {getattr(args, 'scope', None) or 'shared'}", f"kind: {args.kind}",
            f"run: {run}", f"created: {today}", "status: open", f"name: {slug}",
            f"description: {args.title}"]
     if froms:
@@ -612,6 +626,7 @@ def main():
     ap.add_argument('--run')
     ap.add_argument('--topk', '-k', type=int)
     ap.add_argument('--shared-only', action='store_true')
+    ap.add_argument('--scope', help="node scope: shared (default) | squad:<name> | private")
     ap.add_argument('--body-file')
     ap.add_argument('--supersede')
     ap.add_argument('--node')
