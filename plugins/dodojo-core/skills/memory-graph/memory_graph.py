@@ -372,20 +372,41 @@ def squad_of(name):
     return name.split('-', 1)[0] if name and '-' in name else name
 
 
+def known_squads(docs):
+    """Squad names actually observed in the graph's `scope: squad:<name>` values.
+    Derived from real data, never hardcoded, so a squad filter can tell an
+    isolated squad agent apart from a cross-cutting one without a fixed list."""
+    squads = set()
+    for d in docs.values():
+        sc = node_meta(d)['scope']
+        if sc.startswith('squad:'):
+            squads.add(sc.split(':', 1)[1])
+    return squads
+
+
 def visible(docs, role, shared_only=False):
     """Nodes an agent may retrieve:
       - scope==shared          -> visible to everyone (cross-squad common facts)
       - scope==squad:<name>    -> visible only to agents whose squad matches (+ the owner)
       - scope==private         -> visible only to the owner
-    Excludes others' private and other squads' squad-scoped nodes."""
+    Excludes others' private and other squads' squad-scoped nodes.
+
+    The squad filter only applies when the retrieving agent's name-prefix
+    matches a squad actually observed in the graph (see `known_squads`). An
+    agent with no matching prefix (code-reviewer, claude, pm, general-purpose,
+    ...) is cross-cutting, not a member of some squad nobody has ever seen —
+    filtering it out of every squad:* node structurally blinds it to ~90% of
+    real work nodes, which defeats retrieval rather than isolating it."""
     role_squad = squad_of(role)
+    is_squad_agent = role_squad in known_squads(docs)
     out = []
     for p, d in docs.items():
         m = node_meta(d)
         sc = m['scope']
         if sc == 'private' and m['agent'] != role:
             continue
-        if sc.startswith('squad:') and sc.split(':', 1)[1] != role_squad and m['agent'] != role:
+        if (is_squad_agent and sc.startswith('squad:')
+                and sc.split(':', 1)[1] != role_squad and m['agent'] != role):
             continue
         if shared_only and m['agent'] == role and m['scope'] != 'shared':
             continue
@@ -404,7 +425,8 @@ def cmd_retrieve(docs, index, args):
     if args.kind:
         pool = [x for x in pool if x[2]['kind'] == args.kind]
     if not args.include_dead:
-        pool = [x for x in pool if fm(x[1]['txt'], 'status') != 'superseded']
+        pool = [x for x in pool
+                if fm(x[1]['txt'], 'status') not in ('superseded', 'rejected', 'abandoned', 'archived')]
     if not pool:
         print("# (no visible nodes for this scope/kind)"); return
     cache = _load_cache()
