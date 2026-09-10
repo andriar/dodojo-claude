@@ -4,6 +4,19 @@ All notable changes documented here. Format follows [Keep a Changelog](https://k
 
 ## [Unreleased]
 
+### Fixed
+
+- **Daily tip was silently absent from the greeter** — `tips-selector.py` resolved `tips.json` to `~/.claude/Development/Labs/DoDojo-claude/data/tips.json` from its installed location, and a bare `except:` turned the missing file into an empty tip list. Resolution is now an explicit candidate chain: `$DODOJO_TIPS_FILE` → repo/plugin-relative `data/tips.json` → installed plugin cache → legacy dev checkout. The script was live-only at `~/.claude/scripts/`; it is now versioned in `scripts/`.
+- **`sensei-analyzer.py`, `sensei-summary.py`, `tips-selector.py` honor `$DODOJO_DATA`** (default `~/.claude`) for their data root, so they can be pointed at a fixture.
+
+### Changed
+
+- **Test suite no longer runs against the live `~/.claude` install.** The q3 tests asserted machine state — a stale `~/.claude/sensei/telemetry.jsonl` failed 3 of them with no code change involved, and `test_feedback_tracking` unlinked the user's real `tips-feedback.jsonl` on every run. They now seed a tmp `DODOJO_DATA` root and run the repo copies. `test_session_summary` follows telemetry to `plugins/data/dodojo-core/sessions`; `test_smart_context` seeds the categorized `memory/<category>/` layout that smart-context v2 actually reads.
+
+### Known issue
+
+- **Sensei telemetry is dead** — `sensei-telemetry.sh` is registered in neither `settings.json` nor `dodojo-sensei/hooks.json`, so nothing has written `sensei/telemetry.jsonl` since 2026-05-04. The analyzer finds 0 patterns past its 7-day cutoff and `sensei-summary.py` prints nothing. Unresolved: register the hook or deprecate the pipeline.
+
 ## [0.6.1] - 2026-09-10
 
 ### Fixed — memory-graph engine (dodojo-core)
