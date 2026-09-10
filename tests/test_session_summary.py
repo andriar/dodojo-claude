@@ -5,6 +5,17 @@ from pathlib import Path
 from conftest import run_hook
 
 
+def _sessions_dir(data_root: Path) -> Path:
+    """Canonical telemetry dir for a given DODOJO_DATA root.
+
+    Telemetry moved out of `<DODOJO_DATA>/sessions` into
+    `<DODOJO_DATA>/plugins/data/dodojo-core/sessions` (lib/paths.py) so dodojo
+    stops squatting the ~/.claude namespace. Mirrors that layout rather than
+    importing lib/paths, which reads the env at import time.
+    """
+    return data_root / "plugins" / "data" / "dodojo-core" / "sessions"
+
+
 def _make_transcript(tmp: Path) -> Path:
     p = tmp / "transcript.jsonl"
     records = [
@@ -29,7 +40,7 @@ def test_writes_session_record(tmp_path):
         env=env,
     )
     assert r.returncode == 0
-    sessions = list((tmp_path / "data" / "sessions").glob("*.jsonl"))
+    sessions = list(_sessions_dir(tmp_path / "data").glob("*.jsonl"))
     assert len(sessions) == 1
     rec = json.loads(sessions[0].read_text().strip().splitlines()[-1])
     assert rec["tool_total"] == 2
@@ -65,7 +76,7 @@ def test_tool_result_not_counted_as_user_prompt(tmp_path):
     )
     assert r.returncode == 0
     rec = json.loads(
-        next((tmp_path / "data" / "sessions").glob("*.jsonl")).read_text().strip().splitlines()[-1]
+        next(_sessions_dir(tmp_path / "data").glob("*.jsonl")).read_text().strip().splitlines()[-1]
     )
     assert rec["tool_total"] == 3, f"expected 3 tool calls, got {rec['tool_total']}"
     assert rec["files_touched_count"] == 2
@@ -84,7 +95,7 @@ def test_multi_turn_fixture_only_counts_last_turn(tmp_path):
     )
     assert r.returncode == 0
     rec = json.loads(
-        next((tmp_path / "data" / "sessions").glob("*.jsonl")).read_text().strip().splitlines()[-1]
+        next(_sessions_dir(tmp_path / "data").glob("*.jsonl")).read_text().strip().splitlines()[-1]
     )
     assert rec["tool_total"] == 1, rec
     assert rec["tool_counts"] == {"Edit": 1}
@@ -100,4 +111,4 @@ def test_missing_transcript_silent(tmp_path):
         env=env,
     )
     assert r.returncode == 0
-    assert not (tmp_path / "data" / "sessions").exists()
+    assert not _sessions_dir(tmp_path / "data").exists()

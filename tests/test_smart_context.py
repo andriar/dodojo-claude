@@ -6,7 +6,15 @@ from conftest import run_hook
 
 
 def _make_data_dir(tmp: Path) -> Path:
-    mem = tmp / "memory"
+    """Memory store in the v2 categorized layout.
+
+    smart-context v2 collects only from `memory/<category>/` (detected category
+    plus the always-included `patterns`/`general`), so a note dropped flat in
+    `memory/` is invisible to it — which is how the real store is organized.
+    The docker/ufw note goes under `devops/` to match what
+    `auto_detect_category` returns for this prompt.
+    """
+    mem = tmp / "memory" / "devops"
     mem.mkdir(parents=True)
     (mem / "docker_bridge_ufw.md").write_text(
         "---\nname: docker bridge ufw block\ndescription: UFW blocks docker bridge to host port\n---\n\nUFW default-deny silently drops bridge traffic to host ports.\n",

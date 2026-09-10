@@ -5,14 +5,16 @@ Mines telemetry + git + memory to generate optimization recommendations
 """
 
 import json
+import os
 import subprocess
 from pathlib import Path
 from datetime import datetime, timedelta
 from collections import defaultdict
 import sys
 
-SENSEI_DIR = Path.home() / ".claude" / "sensei"
-MEMORY_DIR = Path.home() / ".claude" / "memory"
+USER_DATA = Path(os.environ.get("DODOJO_DATA") or str(Path.home() / ".claude"))
+SENSEI_DIR = USER_DATA / "sensei"
+MEMORY_DIR = USER_DATA / "memory"
 PROJECT_DIR = Path.cwd()
 
 class SenseiAnalyzer:

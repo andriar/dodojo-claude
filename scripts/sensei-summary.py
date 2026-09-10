@@ -5,10 +5,12 @@ Shows top patterns + recommendations
 """
 
 import json
+import os
 from pathlib import Path
 from datetime import datetime
 
-SENSEI_DIR = Path.home() / ".claude" / "sensei"
+USER_DATA = Path(os.environ.get("DODOJO_DATA") or str(Path.home() / ".claude"))
+SENSEI_DIR = USER_DATA / "sensei"
 
 def load_analysis():
     """Load latest analysis.json"""

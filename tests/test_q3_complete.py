@@ -4,12 +4,14 @@ Test suite for Q3 Smart Tips + Sensei Phase 2 + M2 integration
 """
 
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
 from datetime import datetime
 
 PROJECT_ROOT = Path(__file__).parent.parent
+SCRIPTS_DIR = PROJECT_ROOT / "scripts"
 SENSEI_DIR = Path.home() / ".claude" / "sensei"
 FEEDBACK_DIR = Path.home() / ".claude" / "dodojo"
 
@@ -40,11 +42,41 @@ def test_tips_data():
 
     print(f"  ✅ PASS ({len(data['tips'])} tips, {len(categories)} categories)")
 
-def test_tips_selector():
+def _seed_data_dir(tmp_path):
+    """Minimal DODOJO_DATA root with one week-fresh telemetry record.
+
+    These tests used to run the scripts against the live ~/.claude install, so
+    they asserted the developer's machine state (real telemetry, real feedback
+    log) rather than the code. A stale telemetry file — nothing has written
+    ~/.claude/sensei/telemetry.jsonl since the sensei-telemetry hook was
+    unregistered — made them fail with no code change involved.
+    """
+    sensei = tmp_path / "sensei"
+    sensei.mkdir(parents=True)
+    (tmp_path / "memory").mkdir(parents=True)
+    ts = datetime.now().isoformat() + "Z"
+    (sensei / "telemetry.jsonl").write_text(json.dumps({
+        "timestamp": ts,
+        "prompt": {"text": "where is routing defined", "text_length": 25, "category": "search"},
+        "response": {"input": 500, "output": 250, "cache_read": 0},
+        "files_accessed": [{"path": "/tmp/hot-file.py", "reads": 5}],
+        "tools_used": [{"name": "Read", "count": 3}],
+    }) + "\n", encoding="utf-8")
+    return tmp_path
+
+
+def _env_for(data_dir):
+    env = os.environ.copy()
+    env["DODOJO_DATA"] = str(data_dir)
+    env["DODOJO_TIPS_FILE"] = str(PROJECT_ROOT / "data" / "tips.json")
+    return env
+
+
+def test_tips_selector(tmp_path):
     """Test tips selector script"""
     print("✓ Test 2: Tips selector script")
 
-    selector = Path.home() / ".claude" / "scripts" / "tips-selector.py"
+    selector = SCRIPTS_DIR / "tips-selector.py"
     assert selector.exists(), "tips-selector.py not found"
 
     # Test basic execution
@@ -52,7 +84,8 @@ def test_tips_selector():
         [sys.executable, str(selector), "general"],
         capture_output=True,
         text=True,
-        timeout=5
+        timeout=5,
+        env=_env_for(_seed_data_dir(tmp_path)),
     )
 
     assert result.returncode == 0, f"Script failed: {result.stderr}"
@@ -60,25 +93,28 @@ def test_tips_selector():
 
     print(f"  ✅ PASS (output: {result.stdout.split(chr(10))[0][:50]}...)")
 
-def test_sensei_analyzer():
+def test_sensei_analyzer(tmp_path):
     """Test Sensei analyzer"""
     print("✓ Test 3: Sensei analyzer")
 
-    analyzer = Path.home() / ".claude" / "scripts" / "sensei-analyzer.py"
+    analyzer = SCRIPTS_DIR / "sensei-analyzer.py"
     assert analyzer.exists(), "sensei-analyzer.py not found"
+
+    data_dir = _seed_data_dir(tmp_path)
 
     # Run analyzer
     result = subprocess.run(
         [sys.executable, str(analyzer)],
         capture_output=True,
         text=True,
-        timeout=10
+        timeout=10,
+        env=_env_for(data_dir),
     )
 
     assert result.returncode == 0, f"Analyzer failed: {result.stderr}"
 
     # Check analysis.json created
-    analysis_file = SENSEI_DIR / "analysis.json"
+    analysis_file = data_dir / "sensei" / "analysis.json"
     assert analysis_file.exists(), "analysis.json not created"
 
     with open(analysis_file) as f:
@@ -89,23 +125,24 @@ def test_sensei_analyzer():
 
     print(f"  ✅ PASS (detected {len(analysis['patterns'])} patterns)")
 
-def test_feedback_tracking():
+def test_feedback_tracking(tmp_path):
     """Test feedback tracking"""
     print("✓ Test 4: Feedback tracking")
 
-    selector = Path.home() / ".claude" / "scripts" / "tips-selector.py"
-    feedback_file = FEEDBACK_DIR / "tips-feedback.jsonl"
-
-    # Clear feedback file
-    if feedback_file.exists():
-        feedback_file.unlink()
+    # Runs against a tmp DODOJO_DATA root: the old version unlinked the real
+    # ~/.claude/dodojo/tips-feedback.jsonl, destroying the user's rating
+    # history every time the suite ran.
+    selector = SCRIPTS_DIR / "tips-selector.py"
+    data_dir = _seed_data_dir(tmp_path)
+    feedback_file = data_dir / "dodojo" / "tips-feedback.jsonl"
 
     # Log a feedback
     result = subprocess.run(
         [sys.executable, str(selector), "--feedback", "tip_test_001", "👍"],
         capture_output=True,
         text=True,
-        timeout=5
+        timeout=5,
+        env=_env_for(data_dir),
     )
 
     assert result.returncode == 0, f"Feedback logging failed: {result.stderr}"
@@ -191,26 +228,29 @@ def test_m2_milestone():
     assert passed == len(components), f"Missing {len(components) - passed} components"
     print(f"  ✅ PASS ({passed}/{len(components)} components ready)")
 
-def test_end_to_end():
+def test_end_to_end(tmp_path):
     """End-to-end flow test"""
     print("✓ Test 8: End-to-end flow")
 
     print("    Simulating: SessionStart → Greeter output")
 
+    data_dir = _seed_data_dir(tmp_path)
+    env = _env_for(data_dir)
+
     # Step 1: Run analyzer
-    analyzer = Path.home() / ".claude" / "scripts" / "sensei-analyzer.py"
-    result = subprocess.run([sys.executable, str(analyzer)], capture_output=True, timeout=10)
+    analyzer = SCRIPTS_DIR / "sensei-analyzer.py"
+    result = subprocess.run([sys.executable, str(analyzer)], capture_output=True, timeout=10, env=env)
     print(f"    1. Analyzer: {'✅' if result.returncode == 0 else '❌'}")
 
     # Step 2: Get Sensei summary
-    summary = Path.home() / ".claude" / "scripts" / "sensei-summary.py"
-    result = subprocess.run([sys.executable, str(summary)], capture_output=True, text=True, timeout=5)
+    summary = SCRIPTS_DIR / "sensei-summary.py"
+    result = subprocess.run([sys.executable, str(summary)], capture_output=True, text=True, timeout=5, env=env)
     has_sensei = "SENSEI" in result.stdout
     print(f"    2. Sensei tip: {'✅' if has_sensei else '❌'}")
 
     # Step 3: Get daily tip
-    selector = Path.home() / ".claude" / "scripts" / "tips-selector.py"
-    result = subprocess.run([sys.executable, str(selector), "general"], capture_output=True, text=True, timeout=5)
+    selector = SCRIPTS_DIR / "tips-selector.py"
+    result = subprocess.run([sys.executable, str(selector), "general"], capture_output=True, text=True, timeout=5, env=env)
     has_tip = "💡" in result.stdout
     print(f"    3. Daily tip: {'✅' if has_tip else '❌'}")
 
