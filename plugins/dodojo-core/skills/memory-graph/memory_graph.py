@@ -425,8 +425,12 @@ def cmd_retrieve(docs, index, args):
     if args.kind:
         pool = [x for x in pool if x[2]['kind'] == args.kind]
     if not args.include_dead:
+        # "still active" (closure) and "still trustworthy knowledge" (retrieval) are
+        # different questions. Old is not wrong: accepted/archived/abandoned work
+        # stays retrievable. Only a node explicitly superseded or rejected — someone
+        # said "don't rely on this" — leaves the pool.
         pool = [x for x in pool
-                if fm(x[1]['txt'], 'status') not in ('superseded', 'rejected', 'abandoned', 'archived')]
+                if fm(x[1]['txt'], 'status') not in ('superseded', 'rejected')]
     if not pool:
         print("# (no visible nodes for this scope/kind)"); return
     cache = _load_cache()
