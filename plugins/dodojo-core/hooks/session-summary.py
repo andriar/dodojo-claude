@@ -38,6 +38,19 @@ except ImportError:
     CATEGORIZER_AVAILABLE = False
 
 
+def _prompt_category(text: str) -> str:
+    """Domain of the prompt, via the shared categorizer. Empty when unavailable
+    so a missing lib degrades the record rather than the whole hook."""
+    if not CATEGORIZER_AVAILABLE or not text.strip():
+        return ""
+    try:
+        from memory_categorizer import auto_detect_category
+        category, _confidence = auto_detect_category("", "", text)
+        return category or ""
+    except Exception:
+        return ""
+
+
 def update_memory_usage(memory_files: list[str]) -> None:
     """Update reuse count + last_used timestamp for injected memories."""
     if not CATEGORIZER_AVAILABLE or not memory_files:
@@ -116,6 +129,23 @@ except ImportError:
     SESSIONS_DIR = DODOJO_DATA / "sessions"
 TOUCH_TOOLS = {"Read", "Write", "Edit", "MultiEdit", "NotebookEdit"}
 
+# Sensei keys its heuristics off what a prompt was ASKING FOR, not its wording.
+# Storing the matched buckets instead of the prompt text keeps the telemetry
+# free of raw user input while still feeding pattern analysis.
+PROMPT_INTENTS = {
+    "search": ("find", "search", "grep", "where", "which", "location"),
+    "clarify": ("what do you mean", "can you explain", "like this", "like that",
+                "more specifically", "can you clarify", "what is", "how do", "why"),
+    "create": ("create", "write", "add", "new", "build", "implement"),
+    "fix": ("fix", "bug", "error", "broken", "fail", "debug"),
+}
+
+
+def classify_prompt(text: str) -> list[str]:
+    low = text.lower()
+    return [name for name, needles in PROMPT_INTENTS.items()
+            if any(n in low for n in needles)]
+
 
 def main() -> int:
     try:
@@ -132,6 +162,9 @@ def main() -> int:
 
     tool_counts: Counter[str] = Counter()
     files_touched: set[str] = set()
+    file_reads: Counter[str] = Counter()
+    tokens = Counter({"input": 0, "output": 0, "cache_read": 0, "cache_write": 0})
+    prompt_text = ""
     user_chars = 0
     assistant_chars = 0
     last_user_idx = -1
@@ -176,10 +209,20 @@ def main() -> int:
 
             if role == "user" and isinstance(content, str):
                 user_chars += len(content)
+                prompt_text += " " + content
             elif role == "user" and isinstance(content, list):
                 for c in content:
                     if isinstance(c, dict) and c.get("type") == "text":
-                        user_chars += len(c.get("text") or "")
+                        text = c.get("text") or ""
+                        user_chars += len(text)
+                        prompt_text += " " + text
+
+            if role == "assistant":
+                usage = msg.get("usage") or {}
+                tokens["input"] += usage.get("input_tokens", 0) or 0
+                tokens["output"] += usage.get("output_tokens", 0) or 0
+                tokens["cache_read"] += usage.get("cache_read_input_tokens", 0) or 0
+                tokens["cache_write"] += usage.get("cache_creation_input_tokens", 0) or 0
 
             if role == "assistant" and isinstance(content, list):
                 for c in content:
@@ -197,6 +240,8 @@ def main() -> int:
                                 v = ti.get(key)
                                 if isinstance(v, str):
                                     files_touched.add(v)
+                                    if name == "Read":
+                                        file_reads[v] += 1
     except OSError:
         return 0
 
@@ -244,6 +289,10 @@ def main() -> int:
         "tool_total": sum(tool_counts.values()),
         "files_touched": sorted(files_touched)[:50],  # cap
         "files_touched_count": len(files_touched),
+        "file_reads": dict(file_reads),
+        "tokens": dict(tokens),
+        "prompt_intents": classify_prompt(prompt_text),
+        "prompt_category": _prompt_category(prompt_text),
         "user_chars": user_chars,
         "assistant_chars": assistant_chars,
         "memories_injected": injected_memories,

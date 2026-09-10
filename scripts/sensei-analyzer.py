@@ -13,6 +13,22 @@ from collections import defaultdict
 import sys
 
 USER_DATA = Path(os.environ.get("DODOJO_DATA") or str(Path.home() / ".claude"))
+SEARCH_WORDS = ('find', 'search', 'grep', 'where', 'which', 'location')
+CLARIFY_WORDS = ('what do you mean', 'can you explain', 'like this', 'like that',
+                 'more specifically', 'can you clarify', 'what is', 'how do', 'why')
+
+
+def _intents_from_text(text: str) -> list:
+    """Legacy records carry raw prompt text; map it onto the same intent
+    buckets session records already store, so both feed one code path."""
+    intents = []
+    if any(x in text for x in SEARCH_WORDS):
+        intents.append('search')
+    if any(x in text for x in CLARIFY_WORDS):
+        intents.append('clarify')
+    return intents
+
+
 SENSEI_DIR = USER_DATA / "sensei"
 MEMORY_DIR = USER_DATA / "memory"
 PROJECT_DIR = Path.cwd()
@@ -27,12 +43,69 @@ class SenseiAnalyzer:
         self.memory_gaps = []
 
     def load_telemetry(self):
-        """Load telemetry.jsonl from last 7 days"""
+        """Load the last 7 days of telemetry, newest source first.
+
+        Primary source is the session-summary store (`plugins/data/
+        dodojo-core/sessions/*.jsonl`), which a registered Stop hook writes.
+        The legacy `sensei/telemetry.jsonl` is still read so historical data
+        is not orphaned — nothing has written it since the sensei-telemetry
+        hook was dropped.
+        """
+        cutoff = datetime.now(tz=None) - timedelta(days=7)
+        self._load_session_records(cutoff)
+        self._load_legacy_telemetry(cutoff)
+
+    def _session_dirs(self):
+        try:
+            sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "lib"))
+            from paths import sessions_dirs_read  # type: ignore
+            return sessions_dirs_read()
+        except ImportError:
+            return [USER_DATA / "plugins" / "data" / "dodojo-core" / "sessions",
+                    USER_DATA / "sessions"]
+
+    def _load_session_records(self, cutoff):
+        """Normalize session records into the internal telemetry shape."""
+        seen_dirs = set()
+        for d in self._session_dirs():
+            if not d.is_dir() or d in seen_dirs:
+                continue
+            seen_dirs.add(d)
+            for f in sorted(d.glob("*.jsonl")):
+                for line in f.read_text(errors="replace").splitlines():
+                    if not line.strip():
+                        continue
+                    try:
+                        rec = json.loads(line)
+                    except json.JSONDecodeError:
+                        continue
+                    ts = rec.get("ts")
+                    if not isinstance(ts, (int, float)):
+                        continue
+                    if datetime.fromtimestamp(ts) < cutoff:
+                        continue
+                    tokens = rec.get("tokens") or {}
+                    self.telemetry.append({
+                        "timestamp": rec.get("iso") or str(ts),
+                        "session_id": rec.get("session_id", ""),
+                        # Prompt text is deliberately absent from session
+                        # records; the intent buckets carry the same signal.
+                        "prompt": {"intents": rec.get("prompt_intents") or [],
+                                   "category": rec.get("prompt_category", "")},
+                        "response": {"input": tokens.get("input", 0),
+                                     "output": tokens.get("output", 0),
+                                     "cache_read": tokens.get("cache_read", 0)},
+                        "tools_used": [{"name": n, "count": c}
+                                       for n, c in (rec.get("tool_counts") or {}).items()],
+                        "files_accessed": [{"path": p, "reads": c}
+                                           for p, c in (rec.get("file_reads") or {}).items()],
+                    })
+
+    def _load_legacy_telemetry(self, cutoff):
         telemetry_file = SENSEI_DIR / "telemetry.jsonl"
         if not telemetry_file.exists():
             return
 
-        cutoff = datetime.now(tz=None) - timedelta(days=7)
         with open(telemetry_file) as f:
             for line in f:
                 if not line.strip():
@@ -46,6 +119,12 @@ class SenseiAnalyzer:
                     else:
                         ts = datetime.fromisoformat(ts_str)
                     if ts >= cutoff:
+                        prompt = record.get('prompt') or {}
+                        text = (prompt.get('text') or '').lower()
+                        record['prompt'] = {
+                            **prompt,
+                            'intents': _intents_from_text(text),
+                        }
                         self.telemetry.append(record)
                 except Exception as e:
                     continue
@@ -80,12 +159,7 @@ class SenseiAnalyzer:
         current_chain = []
 
         for record in self.telemetry:
-            text = record['prompt']['text'].lower()
-            # Heuristic: if prompt contains certain keywords, it's likely a follow-up
-            is_followup = any(x in text for x in [
-                'what do you mean', 'can you explain', 'like this', 'like that',
-                'more specifically', 'can you clarify', 'what is', 'how do', 'why'
-            ])
+            is_followup = 'clarify' in (record.get('prompt') or {}).get('intents', [])
 
             if is_followup:
                 current_chain.append(record)
@@ -93,6 +167,11 @@ class SenseiAnalyzer:
                 if len(current_chain) >= 2:
                     chains.append(current_chain)
                 current_chain = [record]
+
+        # A chain that runs to the end of the window never hit the `else`
+        # branch above; without this it was silently discarded.
+        if len(current_chain) >= 2:
+            chains.append(current_chain)
 
         if chains:
             avg_chain = sum(len(c) for c in chains) / len(chains)
@@ -112,23 +191,23 @@ class SenseiAnalyzer:
     def analyze_tool_misuse(self):
         """Detect when wrong tool was used"""
         for record in self.telemetry:
-            tools = record.get('tools_used', [])
-            for tool in tools:
-                name = tool['name']
+            intents = (record.get('prompt') or {}).get('intents', [])
+            if 'search' not in intents:
+                continue
+            for tool in record.get('tools_used', []):
+                name = tool['name'] if isinstance(tool, dict) else tool
                 # Read tool could be replaced by Bash + grep
                 if name == 'Read':
-                    text = record['prompt']['text'].lower()
-                    if any(x in text for x in ['find', 'search', 'grep', 'where', 'which', 'location']):
-                        self.patterns.append({
-                            'rank': 0,
-                            'type': 'tool-misuse',
-                            'severity': 'low',
-                            'tool_used': 'Read',
-                            'alternative': 'Bash (grep)',
-                            'suggestion': 'For text search: use `grep` or `awk` instead of reading full file',
-                            'estimate_savings': '~100 tokens per search'
-                        })
-                        break  # One recommendation per analysis
+                    self.patterns.append({
+                        'rank': 0,
+                        'type': 'tool-misuse',
+                        'severity': 'low',
+                        'tool_used': 'Read',
+                        'alternative': 'Bash (grep)',
+                        'suggestion': 'For text search: use `grep` or `awk` instead of reading full file',
+                        'estimate_savings': '~100 tokens per search'
+                    })
+                    break
 
     def analyze_memory_gaps(self):
         """Detect questions asked before but not answered in memory"""
@@ -138,7 +217,11 @@ class SenseiAnalyzer:
                 memory_files.add(f.name.lower())
 
         for record in self.telemetry:
-            text = record['prompt']['text'].lower()
+            # Needs the raw question, which only legacy records carry —
+            # session records store intent buckets, not prompt text.
+            text = ((record.get('prompt') or {}).get('text') or '').lower()
+            if not text:
+                continue
             if text.startswith(('how', 'what', 'can i', 'do i')):
                 # This might be a common question
                 # Check if similar memory exists
@@ -196,8 +279,10 @@ class SenseiAnalyzer:
         """Run full analysis"""
         self.load_telemetry()
         if not self.telemetry:
+            # Still write the (empty) analysis: a leftover file from last week
+            # would otherwise keep feeding the greeter stale patterns.
             print("No telemetry data available")
-            return {}
+            return self.save_analysis()
 
         self.analyze_repeated_reads()
         self.analyze_follow_up_chains()

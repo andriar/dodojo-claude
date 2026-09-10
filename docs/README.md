@@ -76,7 +76,6 @@ Complete guides + reference. Pick your entry point below.
 | `tips-display.sh` | SessionStart | Daily smart tip + rating |
 | `smart-context.py` | UserPromptSubmit | Inject relevant memories (top 2) |
 | `model-route.sh` | UserPromptSubmit | Classify prompt → suggest model + effort |
-| `sensei-telemetry.sh` | Stop | Capture session data (prompts, tokens, tools) |
 
 ---
 

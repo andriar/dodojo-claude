@@ -21,11 +21,13 @@ Requires `dodojo-core` (or legacy `dodojo`) for telemetry source. Without it, Se
 | `skills/sensei` | The Sensei skill itself (review, ideas, decide) |
 | `commands/sensei.md` | `/dodojo:sensei` slash command |
 
-Other Sensei pieces (`sensei-telemetry.sh` for Stop, `sensei-2week-report.sh` for systemd) are user-installed scripts — not bundled here because they require manual systemd unit setup and user-settings hook registration. See the skill's docs.
+`sensei-2week-report.sh` (systemd) stays a user-installed script — it needs a manual unit. See the skill's docs.
+
+`sensei-telemetry.sh` is gone (0.6.3): it was registered nowhere and could not write even when run by hand, because its heredoc `python3` received no argv and bailed on a `None` transcript path. Sensei now analyses the session records `dodojo-core`'s `session-summary.py` already writes on every Stop.
 
 ## Cross-plugin contract
 
-Sensei reads from `DODOJO_TELEMETRY_HOME` (defaults to `~/.claude/plugins/data/dodojo-dodojo/`). This is the same env var dodojo-core writes to. As long as both plugins are installed in the same Claude Code, the data flows.
+Sensei reads the session records dodojo-core writes under `DODOJO_TELEMETRY_HOME` (defaults to `~/.claude/plugins/data/dodojo-core/`), newest location first, then the legacy `dodojo-dodojo/` and `~/.claude/sessions/` dirs, then any historical `sensei/telemetry.jsonl`. As long as both plugins are installed in the same Claude Code, the data flows.
 
 ## Env knobs
 

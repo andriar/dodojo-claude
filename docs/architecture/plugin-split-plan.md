@@ -10,7 +10,7 @@ Status: **complete**. Phase 1 (guards) ✅, Phase 2 (core) ✅, Phase 3 (sensei)
 |-----------|-------|--------|------|
 | **Greeter + telemetry** | dodojo-greet, greeter-lean, log-session-start/stop, session-summary, smart-context, model-route, skill-suggest, memory-trigger, heartbeat-check | audit-context, archive-orphans, memory-curator, surgical-edit, repro-this, pr-describe, recall, hook-health, route-tune, companions, new-skill | Observe + inject context |
 | **Guards** | secret-guard, force-push-guard, cost-guard, inject-git-context | — | Block dangerous tool calls |
-| **Sensei** | sensei-greet, sensei-telemetry, sensei-2week-report | sensei | Weekly ROI digest |
+| **Sensei** | sensei-greet, sensei-2week-report | sensei | Weekly ROI digest |
 | **CLI / scripts** | (none — `dj` is a shell entry point) | — | Zero-token ops |
 
 Issues with single-plugin packaging:
@@ -53,7 +53,7 @@ Owns `~/.claude/plugins/data/dodojo-core/` for telemetry (was `dodojo-dodojo`).
 
 | Files | Role |
 |-------|------|
-| `hooks/sensei-greet.{sh,sh,py}`, `hooks/sensei-telemetry.sh`, `hooks/sensei-2week-report.sh` | Sensei greeter + telemetry |
+| `hooks/sensei-greet.{sh,sh,py}`, `hooks/sensei-2week-report.sh` | Sensei greeter + report |
 | `skills/sensei` | Sensei skill |
 | `routing/*` (sensei-specific) | Route hint authoring |
 
