@@ -422,6 +422,13 @@ def cmd_retrieve(docs, index, args):
     if not args.agent or not args.query:
         sys.stderr.write("retrieve needs --agent and --query\n"); sys.exit(1)
     pool = visible(docs, args.agent, args.shared_only)
+    # Spawn nodes are activity records, not retrievable knowledge — and scoping
+    # them `private` (visible()'s job) only keeps OTHER agents from seeing an
+    # agent's own spawn history, not the owner. Measured live: general-purpose
+    # 39%, code-reviewer 38%, claude 35% of an agent's own retrieve pool was
+    # its own spawn records. Every other consumer (run-graph, report, Armory,
+    # staleness) still reads spawn nodes off disk — only retrieval excludes them.
+    pool = [x for x in pool if x[2]['kind'] != 'spawn']
     if args.kind:
         pool = [x for x in pool if x[2]['kind'] == args.kind]
     if not args.include_dead:
