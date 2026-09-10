@@ -4,6 +4,8 @@ All notable changes documented here. Format follows [Keep a Changelog](https://k
 
 ## [Unreleased]
 
+## [0.6.3] - 2026-09-10
+
 ### Fixed — Sensei had no input at all
 
 - **`sensei-telemetry.sh` removed.** It was registered in neither `settings.json` nor `dodojo-sensei/hooks.json`, and could not write even when run by hand — its heredoc `python3` received no argv, so the transcript path was always `None` and the parser exited first. It also picked the newest `.jsonl` under `~/.claude/projects` instead of the payload's `transcript_path`, so it could sample a different session. `sensei/telemetry.jsonl` last grew 2026-05-04, which left the analyzer with 0 records inside its 7-day window, 0 patterns, and a silent `sensei-summary.py`.
