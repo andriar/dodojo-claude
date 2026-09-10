@@ -4,6 +4,15 @@ All notable changes documented here. Format follows [Keep a Changelog](https://k
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-09-10
+
+### Fixed — memory-graph engine (dodojo-core)
+
+- **Squad-scoped node visibility** — `scope: squad:<name>` nodes are visible to agents of that squad (plus the owner); `shared` stays global, `private` stays owner-only.
+- **Squad filter no longer blinds non-squad agents** — the filter applies only when the retrieving agent's name-prefix matches a squad actually observed in the graph. Cross-cutting agents (`code-reviewer`, `claude`, `pm`, `general-purpose`, ...) keep full access instead of being cut off from ~90% of real work nodes.
+- **Retrieval exclusion narrowed** — `accepted`/`archived`/`abandoned` nodes stay retrievable; only `superseded`/`rejected` leave the pool. Old is not wrong.
+- **Spawn nodes excluded from `retrieve`** — activity records, not knowledge. Measured live they were 35-39% of an agent's own retrieve pool. Every other consumer (run-graph, report, Armory, staleness) still reads them.
+
 ## [0.6.0] - 2026-06-13
 
 ### Added — memory-graph (dodojo-core) + multi-agent collaboration
