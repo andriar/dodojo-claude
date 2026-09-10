@@ -4,6 +4,8 @@ All notable changes documented here. Format follows [Keep a Changelog](https://k
 
 ## [Unreleased]
 
+## [0.6.2] - 2026-09-10
+
 ### Fixed
 
 - **Daily tip was silently absent from the greeter** — `tips-selector.py` resolved `tips.json` to `~/.claude/Development/Labs/DoDojo-claude/data/tips.json` from its installed location, and a bare `except:` turned the missing file into an empty tip list. Resolution is now an explicit candidate chain: `$DODOJO_TIPS_FILE` → repo/plugin-relative `data/tips.json` → installed plugin cache → legacy dev checkout. The script was live-only at `~/.claude/scripts/`; it is now versioned in `scripts/`.
