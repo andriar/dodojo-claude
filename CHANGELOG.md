@@ -4,6 +4,22 @@ All notable changes documented here. Format follows [Keep a Changelog](https://k
 
 ## [Unreleased]
 
+### Fixed — Sensei had no input at all
+
+- **`sensei-telemetry.sh` removed.** It was registered in neither `settings.json` nor `dodojo-sensei/hooks.json`, and could not write even when run by hand — its heredoc `python3` received no argv, so the transcript path was always `None` and the parser exited first. It also picked the newest `.jsonl` under `~/.claude/projects` instead of the payload's `transcript_path`, so it could sample a different session. `sensei/telemetry.jsonl` last grew 2026-05-04, which left the analyzer with 0 records inside its 7-day window, 0 patterns, and a silent `sensei-summary.py`.
+- **Sensei now analyses the session records dodojo-core already writes.** `sensei-analyzer.py` reads `sessions_dirs_read()` (canonical `plugins/data/dodojo-core/sessions`, then legacy dirs) and still parses any historical `sensei/telemetry.jsonl`, mapping its raw prompt text onto the same intent buckets so both feed one code path.
+- **A follow-up chain running to the end of the analysis window was discarded** — chains were only closed by a following non-followup record.
+- **`run()` wrote no `analysis.json` when telemetry was empty**, leaving a stale file to keep feeding the greeter patterns from old data.
+
+### Added
+
+- `session-summary.py` records what Sensei's heuristics need: `file_reads` (per-path Read counts — `files_touched` is a set, so the counts were discarded), `tokens` (input/output/cache_read/cache_write from `message.usage`), and `prompt_intents` + `prompt_category`. Raw prompt text is deliberately not stored.
+- `tests/test_sensei_analyzer.py` covers the new input path, the 7-day window, and legacy-record compatibility.
+
+### Known limitation
+
+- `memory-gap` detection needs the raw question text and so only fires on legacy records. Every other pattern works from session records.
+
 ## [0.6.2] - 2026-09-10
 
 ### Fixed
