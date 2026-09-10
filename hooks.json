@@ -1,4 +1,3 @@
 {
-  "_deprecated": "Legacy dodojo plugin no longer registers hooks. Install dodojo-core (greeter+telemetry+CLI+maintenance skills), dodojo-guards (safety blockers), and/or dodojo-sensei (ROI advisor) separately. See plugins/ in this repo.",
   "hooks": {}
 }
